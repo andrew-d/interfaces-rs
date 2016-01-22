@@ -40,7 +40,7 @@
     #define OS_POSIX 1
 #endif
 
-#if !defined(OS_LINUX) && !defined(OS_MACOS) && !defined(OS_IOS) && !defined(OS_WINDOWS)
+#if !defined(OS_LINUX) && !defined(OS_MACOS) && !defined(OS_IOS) && !defined(OS_WINDOWS) && !defined(OS_BSD)
     #error "Unknown compiler"
 #endif
 
