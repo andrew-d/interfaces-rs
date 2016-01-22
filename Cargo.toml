@@ -1,0 +1,18 @@
+[package]
+name = "interfaces"
+version = "0.0.1"
+authors = ["Andrew Dunham <adunham@stripe.com>"]
+license = "MIT/Apache-2.0"
+build = "build.rs"
+
+[dependencies]
+bitflags = "*"
+ip = "1.0"
+lazy_static = "0.1.*"
+libc = "0.2"
+nix = "0.4"
+
+[build-dependencies]
+gcc = "0.3"
+handlebars = "0.13"
+rustc-serialize = "0.3"

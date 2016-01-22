@@ -1,0 +1,8 @@
+target
+Cargo.lock
+
+# Vagrant stuff
+.vagrant
+
+# Generated from a template
+src/ffi.c
