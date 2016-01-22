@@ -97,13 +97,19 @@ impl HardwareAddr {
     pub fn zero() -> HardwareAddr {
         HardwareAddr([0; 6])
     }
-}
 
-impl fmt::Display for HardwareAddr {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    /// Formats this hardware address in the standard MAC address format - 6 octets in hexadecimal
+    /// format, each seperated by a colon.
+    ///
+    /// ```
+    /// # use interfaces::HardwareAddr;
+    /// let s = HardwareAddr::zero().as_string();
+    /// assert_eq!(s, "00:00:00:00:00:00");
+    /// ```
+    pub fn as_string(&self) -> String {
         let &HardwareAddr(ref arr) = self;
 
-        write!(f, "{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}",
+        format!("{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}",
             arr[0],
             arr[1],
             arr[2],
@@ -111,6 +117,33 @@ impl fmt::Display for HardwareAddr {
             arr[4],
             arr[5]
         )
+    }
+
+    /// Formats this hardware address as a sequence of hexadecimal numbers without the seperating
+    /// colons.
+    ///
+    /// ```
+    /// # use interfaces::HardwareAddr;
+    /// let s = HardwareAddr::zero().as_bare_string();
+    /// assert_eq!(s, "000000000000");
+    /// ```
+    pub fn as_bare_string(&self) -> String {
+        let &HardwareAddr(ref arr) = self;
+
+        format!("{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+            arr[0],
+            arr[1],
+            arr[2],
+            arr[3],
+            arr[4],
+            arr[5]
+        )
+    }
+}
+
+impl fmt::Display for HardwareAddr {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.as_string())
     }
 }
 
