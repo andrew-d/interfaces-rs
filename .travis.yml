@@ -37,7 +37,7 @@ script:
 after_success:
   # Upload the documentation from the Linux nightly build (automatically only
   # actually runs on the master branch, not individual PRs)
-  - [ $TRAVIS_OS_NAME = linux ] && travis-cargo --only nightly doc-upload
+  - '[ $TRAVIS_OS_NAME = linux ] && travis-cargo --only nightly doc-upload'
 
   # Measure code coverage and upload to coveralls.io
   - travis-cargo coveralls --no-sudo
