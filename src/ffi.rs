@@ -82,3 +82,9 @@ pub fn convert_sockaddr(sa: *mut socket::sockaddr) -> Option<net::SocketAddr> {
     };
     Some(sa)
 }
+
+// Helper functions from `helpers.c`
+extern "C" {
+    #[cfg(target_os = "macos")]
+    pub fn rust_LLADDR(p: *mut ifaddrs) -> *const u8;
+}

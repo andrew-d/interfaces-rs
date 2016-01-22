@@ -167,6 +167,7 @@ impl fmt::Display for HardwareAddr {
 
 /// An iterator to walk through all `ifaddrs`.
 struct IfAddrIterator {
+    orig: *mut ffi::ifaddrs,
     ifap: *mut ffi::ifaddrs,
 }
 
@@ -178,7 +179,10 @@ impl IfAddrIterator {
             return Err(InterfacesError::last_os_error());
         }
 
-        Ok(IfAddrIterator { ifap: ifap })
+        Ok(IfAddrIterator {
+            orig: ifap,
+            ifap: ifap,
+        })
     }
 }
 
@@ -198,8 +202,11 @@ impl Iterator for IfAddrIterator {
 
 impl Drop for IfAddrIterator {
     fn drop(&mut self) {
-        // Zero the pointer in the structure and then free it.
-        let ptr = mem::replace(&mut self.ifap, ptr::null_mut());
+        // Zero the iterator pointer.
+        self.ifap = ptr::null_mut();
+
+        // Zero the original pointer in the structure and then free it.
+        let ptr = mem::replace(&mut self.orig, ptr::null_mut());
         unsafe { ffi::freeifaddrs(ptr) };
     }
 }
@@ -306,11 +313,44 @@ impl Interface {
     fn hardware_addr_impl(&self) -> Result<HardwareAddr> {
         // We need certain constants - get them now.
         let AF_LINK = match constants::get_constant("AF_LINK") {
-            Some(c) => c,
+            Some(c) => c as i32,
             None => return Err(InterfacesError::NotSupported("AF_LINK")),
         };
 
-        panic!("Finish me");
+        // Walk all interfaces looking for one that is the right type and name.  We:
+        //  - Get the name from this interface
+        //  - Filter only where the name == ours
+        //  - Get only AF_LINK interfaces
+        let mut it = try!(IfAddrIterator::new())
+            .filter_map(|cur| {
+                if let Some(name) = convert_ifaddr_name(cur) {
+                    Some((name, cur))
+                } else {
+                    None
+                }
+            })
+            .filter(|&(ref name, _)| name == &self.name)
+            .filter(|&(_, ifa)| {
+                let ifa = unsafe { &mut *ifa };
+                let family = unsafe { *ifa.ifa_addr }.sa_family as i32;
+                family == AF_LINK
+            });
+
+        let link_if = match it.next() {
+            Some((name, ifa)) => ifa,
+            None => return Err(InterfacesError::NotSupported("No AF_LINK")),
+        };
+
+        let mut addr = [0; 6];
+        let mut pr = unsafe { ffi::rust_LLADDR(link_if) };
+
+        for i in 0..6 {
+            addr[i] = unsafe { *pr };
+            pr = ((pr as usize) + 1) as *const u8;
+        }
+
+        drop(it);
+        Ok(HardwareAddr(addr))
     }
 
     #[cfg(not(any(target_os = "linux", target_os = "macos")))]

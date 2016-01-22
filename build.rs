@@ -22,8 +22,10 @@ fn main() {
     // Build the final library
     let mut cfg = gcc::Config::new();
 
-    let path = Path::new("src").join("constants.c");
-    cfg.file(&path)
+    let path1 = Path::new("src").join("constants.c");
+    let path2 = Path::new("src").join("helpers.c");
+    cfg.file(&path1)
+       .file(&path2)
        .compile("libinterfaces.a");
 }
 
