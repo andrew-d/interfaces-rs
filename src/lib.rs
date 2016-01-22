@@ -165,6 +165,45 @@ impl fmt::Display for HardwareAddr {
     }
 }
 
+/// An iterator to walk through all `ifaddrs`.
+struct IfAddrIterator {
+    ifap: *mut ffi::ifaddrs,
+}
+
+impl IfAddrIterator {
+    fn new() -> Result<IfAddrIterator> {
+        // Get all interface addresses
+        let mut ifap: *mut ffi::ifaddrs = unsafe { mem::zeroed() };
+        if unsafe { ffi::getifaddrs(&mut ifap as *mut _) } != 0 {
+            return Err(InterfacesError::last_os_error());
+        }
+
+        Ok(IfAddrIterator { ifap: ifap })
+    }
+}
+
+impl Iterator for IfAddrIterator {
+    type Item = *mut ffi::ifaddrs;
+
+    fn next(&mut self) -> Option<*mut ffi::ifaddrs> {
+        if self.ifap.is_null() {
+            return None;
+        }
+
+        let ret = self.ifap;
+        self.ifap = unsafe { (*self.ifap).ifa_next };
+        Some(ret)
+    }
+}
+
+impl Drop for IfAddrIterator {
+    fn drop(&mut self) {
+        // Zero the pointer in the structure and then free it.
+        let ptr = mem::replace(&mut self.ifap, ptr::null_mut());
+        unsafe { ffi::freeifaddrs(ptr) };
+    }
+}
+
 /// The `Interface` structure represents a single interface on the system.  It also contains
 /// methods to control the interface.
 #[derive(Debug)]
@@ -186,18 +225,9 @@ pub struct Interface {
 impl Interface {
     /// Retrieve a list of all interfaces on this system.
     pub fn get_all() -> Result<Vec<Interface>> {
-        // Get all interface addresses
-        let mut ifap: *mut ffi::ifaddrs = unsafe { mem::zeroed() };
-        if unsafe { ffi::getifaddrs(&mut ifap as *mut _) } != 0 {
-            return Err(InterfacesError::last_os_error());
-        }
-
-        // Used to deduplicate interfaces.
-        let mut ifs = HashMap::new();
-
         // Map each interface address to a single interface name.
-        let mut cur: *mut ffi::ifaddrs = ifap;
-        while cur != ptr::null_mut() {
+        let mut ifs = HashMap::new();
+        for cur in try!(IfAddrIterator::new()) {
             if let Some(name) = convert_ifaddr_name(cur) {
                 // Either get the current entry for this interface or insert a new one.
                 let iface = ifs
@@ -209,12 +239,7 @@ impl Interface {
                     iface.addresses.push(addr);
                 }
             }
-
-            // TODO: do something else maybe?
-            cur = unsafe { (*cur).ifa_next };
         }
-
-        unsafe { ffi::freeifaddrs(ifap) };
 
         let ret = ifs.into_iter().map(|(_, v)| v).collect::<Vec<_>>();
         Ok(ret)
