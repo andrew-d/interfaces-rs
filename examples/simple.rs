@@ -10,6 +10,7 @@ fn main() {
         println!("{}:", i.name);
         println!("----------");
         println!("Flags: {:?}", i.flags);
+        println!("HWAddr: {}", i.hardware_addr().unwrap_or(interfaces::HardwareAddr::zero()));
 
         println!("Addresses:");
         for addr in i.addresses.iter() {

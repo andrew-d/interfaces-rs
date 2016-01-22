@@ -6,6 +6,15 @@ use ip::IpAddr;
 use libc::{c_void, c_char, c_int, c_uint};
 use nix::sys::socket;
 
+pub const IFNAMSIZ: usize = 16;
+
+#[repr(C)]
+pub struct ifreq_with_hwaddr {
+    pub ifr_name: [u8; IFNAMSIZ],
+    pub ifr_hwaddr: socket::sockaddr,
+    // TODO: hwaddr
+}
+
 #[repr(C)]
 pub struct union_ifa_ifu {
     pub data: *mut c_void,

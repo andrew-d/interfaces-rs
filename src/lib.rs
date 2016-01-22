@@ -11,6 +11,8 @@ use std::mem;
 use std::net;
 use std::ptr;
 
+use libc::{AF_INET, SOCK_DGRAM};
+use libc::{close, ioctl, socket};
 use nix::sys::socket;
 
 pub use error::InterfacesError;
@@ -84,6 +86,30 @@ pub struct Address {
     pub hop: Option<NextHop>,
 }
 
+#[derive(Debug)]
+pub struct HardwareAddr([u8; 6]);
+
+impl HardwareAddr {
+    pub fn zero() -> HardwareAddr {
+        HardwareAddr([0; 6])
+    }
+}
+
+impl fmt::Display for HardwareAddr {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let &HardwareAddr(ref arr) = self;
+
+        write!(f, "{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}",
+            arr[0],
+            arr[1],
+            arr[2],
+            arr[3],
+            arr[4],
+            arr[5]
+        )
+    }
+}
+
 /// The `Interface` structure represents a single interface on the system.  It also contains
 /// methods to control the interface.
 #[derive(Debug)]
@@ -108,7 +134,7 @@ impl Interface {
         // Get all interface addresses
         let mut ifap: *mut ffi::ifaddrs = unsafe { mem::zeroed() };
         if unsafe { ffi::getifaddrs(&mut ifap as *mut _) } != 0 {
-            return Err(InterfacesError::last_errno());
+            return Err(InterfacesError::last_os_error());
         }
 
         // Used to deduplicate interfaces.
@@ -142,6 +168,74 @@ impl Interface {
     /// Returns whether this interface is up.
     pub fn is_up(&self) -> bool {
         self.flags.contains(flags::IFF_UP)
+    }
+
+    /// Returns whether this interface is a loopback address.
+    pub fn is_loopback(&self) -> bool {
+        self.flags.contains(flags::IFF_LOOPBACK)
+    }
+
+    /// Retrieves the hardware address of this interface.
+    pub fn hardware_addr(&self) -> Result<HardwareAddr> {
+        self.hardware_addr_impl()
+    }
+
+    #[cfg(target_os = "linux")]
+    #[allow(non_snake_case)]
+    fn hardware_addr_impl(&self) -> Result<HardwareAddr> {
+        // We need this IOCTL in order to get the hardware address.
+        let SIOCGIFHWADDR = match constants::get_constant("SIOCGIFHWADDR") {
+            Some(c) => c,
+            None => return Err(InterfacesError::NotSupported("SIOCGIFHWADDR")),
+        };
+
+        // Create a socket.
+        let sock = unsafe { socket(AF_INET, SOCK_DGRAM, 0) };
+        if sock < 0 {
+            return Err(InterfacesError::last_os_error());
+        }
+
+        let mut req = ffi::ifreq_with_hwaddr {
+            ifr_name: [0; ffi::IFNAMSIZ],
+            ifr_hwaddr: socket::sockaddr {
+                sa_family: 0,
+                sa_data: [0; 14],
+            },
+        };
+
+        copy_slice(&mut req.ifr_name, self.name.as_bytes());
+
+        let res = unsafe { ioctl(sock, SIOCGIFHWADDR, &mut req) };
+        if res < 0 {
+            let err = InterfacesError::last_os_error();
+            unsafe { close(sock) };
+            return Err(err);
+        }
+
+        let mut addr = [0; 6];
+        for i in 0..6 {
+            addr[i] = req.ifr_hwaddr.sa_data[i];
+        }
+
+        unsafe { close(sock) };
+        Ok(HardwareAddr(addr))
+    }
+
+    #[cfg(target_os = "macos")]
+    #[allow(non_snake_case)]
+    fn hardware_addr_impl(&self) -> Result<HardwareAddr> {
+        // We need certain constants - get them now.
+        let AF_LINK = match constants::get_constant("AF_LINK") {
+            Some(c) => c,
+            None => return Err(InterfacesError::NotSupported("AF_LINK")),
+        };
+
+        panic!("Finish me");
+    }
+
+    #[cfg(not(any(target_os = "linux", target_os = "macos")))]
+    fn hardware_addr_impl(&self) -> Result<HardwareAddr> {
+        Err(InterfacesError::NotSupported("Unknown OS"))
     }
 }
 
@@ -191,8 +285,8 @@ fn convert_ifaddr_family(family: i32) -> Kind {
     check_family!(AF_LINK -> Link);
 
     match family {
-        socket::AF_INET => Kind::Ipv4,
-        socket::AF_INET6 => Kind::Ipv6,
+        libc::AF_INET => Kind::Ipv4,
+        libc::AF_INET6 => Kind::Ipv6,
         val => Kind::Unknown(val),
     }
 }
@@ -239,3 +333,16 @@ impl PartialEq for Interface {
 }
 
 impl Eq for Interface {}
+
+
+// Helper function
+fn copy_slice(dst: &mut [u8], src: &[u8]) -> usize {
+    let mut c = 0;
+
+    for (d, s) in dst.iter_mut().zip(src.iter()) {
+        *d = *s;
+        c += 1;
+    }
+
+    c
+}

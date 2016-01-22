@@ -54,12 +54,15 @@ fn make_data() -> BTreeMap<String, Json> {
     // and then including that in the final build.  See `constants.rs` for a function that can be
     // used to retrieve them.
     let names: &[&str] = &[
+        // IOCTLs
+        "SIOCGIFCONF",
+        "SIOCGIFHWADDR",
         "SIOCGIFFLAGS",
         "SIOCSIFFLAGS",
-        "AF_LINK",
 
-        // Only on Linux
-        "AF_PACKET",
+        // Address families
+        "AF_LINK",
+        "AF_PACKET", // Only on Linux
     ];
 
     let snames = names
