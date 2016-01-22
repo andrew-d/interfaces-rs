@@ -3,7 +3,7 @@ use std::net;
 use std::ptr;
 
 use ip::IpAddr;
-use libc::{c_void, c_char, c_int, c_uint};
+use libc::{c_void, c_char, c_int, c_uint, c_ushort};
 use nix::sys::socket;
 
 pub const IFNAMSIZ: usize = 16;
@@ -12,6 +12,12 @@ pub const IFNAMSIZ: usize = 16;
 pub struct ifreq_with_hwaddr {
     pub ifr_name: [u8; IFNAMSIZ],
     pub ifr_hwaddr: socket::sockaddr,
+}
+
+#[repr(C)]
+pub struct ifreq_with_flags {
+    pub ifr_name: [u8; IFNAMSIZ],
+    pub ifr_flags: c_ushort,
 }
 
 #[repr(C)]

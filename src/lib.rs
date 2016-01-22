@@ -357,6 +357,66 @@ impl Interface {
     fn hardware_addr_impl(&self) -> Result<HardwareAddr> {
         Err(InterfacesError::NotSupported("Unknown OS"))
     }
+
+    /// Sets the interface as up or down.  This will change the status of the given interface in
+    /// the system, and update the flags of this `Interface` instance.
+    pub fn set_up(&mut self, up: bool) -> Result<()> {
+        // We need these IOCTLs in order to get/set the interface flags.
+        let SIOCGIFFLAGS = match constants::get_constant("SIOCGIFFLAGS") {
+            Some(c) => c,
+            None => return Err(InterfacesError::NotSupported("SIOCGIFFLAGS")),
+        };
+        let SIOCSIFFLAGS = match constants::get_constant("SIOCSIFFLAGS") {
+            Some(c) => c,
+            None => return Err(InterfacesError::NotSupported("SIOCSIFFLAGS")),
+        };
+
+        // Create a socket.
+        let sock = unsafe { socket(AF_INET, SOCK_DGRAM, 0) };
+        if sock < 0 {
+            return Err(InterfacesError::last_os_error());
+        }
+
+        let mut req = ffi::ifreq_with_flags {
+            ifr_name: [0; ffi::IFNAMSIZ],
+            ifr_flags: 0,
+        };
+
+        copy_slice(&mut req.ifr_name, self.name.as_bytes());
+
+        // Get the existing flags.
+        let res = unsafe { ioctl(sock, SIOCGIFFLAGS, &mut req) };
+        if res < 0 {
+            let err = InterfacesError::last_os_error();
+            unsafe { close(sock) };
+            return Err(err);
+        }
+
+        // Depending on our up/down, clear IFF_UP.
+        // NOTE: we don't want to convert this to/from an InterfaceFlags variable, since that will
+        // strip out any unknown bits (which we don't want).  So, we just use good old bitwise
+        // operators to set/clear the flags.
+        let flag_val = flags::IFF_UP.bits() as u16;
+        req.ifr_flags = if up {
+            req.ifr_flags | flag_val
+        } else {
+            req.ifr_flags & (!flag_val)
+        };
+
+        // Set the flags back.
+        let res = unsafe { ioctl(sock, SIOCSIFFLAGS, &mut req) };
+        if res < 0 {
+            let err = InterfacesError::last_os_error();
+            unsafe { close(sock) };
+            return Err(err);
+        }
+
+        // Update our flags to represent the new state.
+        self.flags = InterfaceFlags::from_bits_truncate(req.ifr_flags as u32);
+
+        unsafe { close(sock) };
+        Ok(())
+    }
 }
 
 fn convert_ifaddr_name(ifa: *mut ffi::ifaddrs) -> Option<String> {
