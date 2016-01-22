@@ -9,10 +9,9 @@ addons:
       - libelf-dev
       - libdw-dev
 
-# TODO: figure out how to disable doc upload twice, then enable these
-##os:
-##  - osx
-##  - linux
+os:
+  - osx
+  - linux
 
 rust:
   - nightly
@@ -36,9 +35,9 @@ script:
       travis-cargo --only nightly doc
 
 after_success:
-  # Upload the documentation from the build with stable (automatically only
+  # Upload the documentation from the Linux nightly build (automatically only
   # actually runs on the master branch, not individual PRs)
-  - travis-cargo --only nightly doc-upload
+  - [ $TRAVIS_OS_NAME = linux ] && travis-cargo --only nightly doc-upload
 
   # Measure code coverage and upload to coveralls.io
   - travis-cargo coveralls --no-sudo
@@ -46,3 +45,4 @@ after_success:
 env:
   global:
     - TRAVIS_CARGO_NIGHTLY_FEATURE=""
+    - secure: HCP7ryQwRDYIIgAcvoDLEYvx85OlYrySW2YUMu6tk2o4JSfPdXHU6PoA6B23BtGaUrjNabMHVtwUzBUC2xvFAdgCk/cYo6y2LTEt2ygCwEuWwxpVyUOtTWz60XMNwzYK7AABeEqrcj0XNYPk/oZKsOmrpEyAnFW/nXrBzokd0oC7Y4CgbPQWhG+2FD+N7xleczLMTkXlO3xCuxtEH7OIFOdH1yQTM8P9/wXRx3L4KsNzVgjM276U2bIoZ7Cr1eQW1tXPQfAgvr6MLSt4ONjQYsEnZbZxhkx84fBY6Q0BEEKnv1tdRIegBv/mfAS2bfeocLwzImw4H4C2yDjO2+rFHKiAiQjbAC6CG3CfkSH0nUKGbi5EDK6Ci/gWFbEcr33PyVOe2m3XLTYLF6oNTU1WFTxCIySLHe4rviVvMJpyuXE8m4VaIVGgZEFA5GgP2j+nFUGKJsxQZeeYnI047AWtj555vCEAoUGWnYUGg/Q6btkIVl0Z4z2Qi+D+99t9llrS+rhSabXOYh6m2JOAhvEWT0dK3RDCDjQcSz69jQlN8JWN1IAKD9nQwUS4NPqvtD2+cJDDvHTAJO+yykA4nDHuwokmRq9ug8yzskKATSd+AYamiLwAxMiQ3u5APIvVoSKjrRn+dVTLKQ7XNOioLEK4Rld+nEjbaFaQqalMGins4zc=
