@@ -86,10 +86,14 @@ pub struct Address {
     pub hop: Option<NextHop>,
 }
 
+/// HardwareAddr represents a hardware address (commonly known as a MAC address) of a given
+/// interface.
 #[derive(Debug)]
 pub struct HardwareAddr([u8; 6]);
 
 impl HardwareAddr {
+    /// Returns a new, empty `HardwareAddr` structure.  This is equivalent to the MAC address
+    /// `00:00:00:00:00:00`.
     pub fn zero() -> HardwareAddr {
         HardwareAddr([0; 6])
     }
