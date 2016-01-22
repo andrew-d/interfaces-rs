@@ -240,7 +240,7 @@ impl Interface {
                 let iface = ifs
                     .entry(name)
                     .or_insert_with(|| convert_ifaddr(cur));
-                
+
                 // If we can, convert this current address.
                 if let Some(addr) = convert_ifaddr_address(cur) {
                     iface.addresses.push(addr);
