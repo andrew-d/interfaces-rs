@@ -12,7 +12,6 @@ pub const IFNAMSIZ: usize = 16;
 pub struct ifreq_with_hwaddr {
     pub ifr_name: [u8; IFNAMSIZ],
     pub ifr_hwaddr: socket::sockaddr,
-    // TODO: hwaddr
 }
 
 #[repr(C)]

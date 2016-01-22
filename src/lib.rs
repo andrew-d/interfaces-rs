@@ -88,7 +88,7 @@ pub struct Address {
 
 /// HardwareAddr represents a hardware address (commonly known as a MAC address) of a given
 /// interface.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub struct HardwareAddr([u8; 6]);
 
 impl HardwareAddr {
