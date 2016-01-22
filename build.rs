@@ -63,6 +63,9 @@ fn make_data() -> BTreeMap<String, Json> {
         // Address families
         "AF_LINK",
         "AF_PACKET", // Only on Linux
+
+        // Miscellaneous
+        "sizeof(struct ifreq)",
     ];
 
     let snames = names

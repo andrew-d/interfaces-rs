@@ -16,6 +16,8 @@ pub enum InterfacesError {
 }
 
 impl InterfacesError {
+    /// Create a new instance of `InterfacesError` with the error set to the current value of the
+    /// libc `errno` variable.
     pub fn last_os_error() -> InterfacesError {
         return InterfacesError::Errno(nix::errno::Errno::last());
     }

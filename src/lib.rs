@@ -1,3 +1,9 @@
+#![deny(missing_docs)]
+
+//! A library for interoperating with the network interfaces of a system.
+//!
+//! TODO: more documentation on how to use goes here.
+
 #[macro_use] extern crate bitflags;
 extern crate ip;
 #[macro_use] extern crate lazy_static;
@@ -30,12 +36,20 @@ pub type Result<T> = ::std::result::Result<T, InterfacesError>;
 /// structure).
 #[derive(PartialEq, Eq, Debug)]
 pub enum Kind {
+    /// This interface is IPv4.
     Ipv4,
+
+    /// This interface is IPv6.
     Ipv6,
+
+    /// This interface is a link interface (`AF_LINK`).
     Link,
+
+    /// This interface has an unknown interface type.  The interior `i32` contains the numerical
+    /// value that is unknown.
     Unknown(i32),
 
-    // Linux only
+    /// Linux only: this interface is a packet interface (`AF_PACKET`).
     Packet,
 }
 
@@ -51,9 +65,13 @@ impl fmt::Display for Kind {
     }
 }
 
+/// The next hop for an interface.  See the individual variants for more information.
 #[derive(PartialEq, Eq, Debug)]
 pub enum NextHop {
+    /// The broadcast address associated with the interface's address.
     Broadcast(net::SocketAddr),
+
+    /// The destination address of a point-to-point interface.
     Destination(net::SocketAddr),
 }
 
