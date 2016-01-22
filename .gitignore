@@ -5,4 +5,4 @@ Cargo.lock
 .vagrant
 
 # Generated from a template
-src/ffi.c
+src/constants.c

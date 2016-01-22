@@ -56,6 +56,10 @@ fn make_data() -> BTreeMap<String, Json> {
     let names: &[&str] = &[
         "SIOCGIFFLAGS",
         "SIOCSIFFLAGS",
+        "AF_LINK",
+
+        // Only on Linux
+        "AF_PACKET",
     ];
 
     let snames = names

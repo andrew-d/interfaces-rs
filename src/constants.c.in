@@ -13,7 +13,9 @@ typedef struct constant {
 constant_t* rust_get_constants() {
     static constant_t constants[] = {
         {{#each constants}}
+#ifdef {{.}}
             { "{{.}}", {{.}} },
+#endif
         {{/each}}
 
         // End of list sentinel

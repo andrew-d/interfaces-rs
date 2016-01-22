@@ -13,7 +13,8 @@ use std::ptr;
 
 use nix::sys::socket;
 
-use error::InterfacesError;
+pub use error::InterfacesError;
+pub use flags::InterfaceFlags;
 
 mod constants;
 mod error;
@@ -27,18 +28,24 @@ pub type Result<T> = ::std::result::Result<T, InterfacesError>;
 /// structure).
 #[derive(PartialEq, Eq, Debug)]
 pub enum Kind {
-    Packet,
     Ipv4,
     Ipv6,
+    Link,
+    Unknown(i32),
+
+    // Linux only
+    Packet,
 }
 
 impl fmt::Display for Kind {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", match *self {
-            Kind::Packet => "Packet",
-            Kind::Ipv4 => "IPv4",
-            Kind::Ipv6 => "IPv6",
-        })
+        match *self {
+            Kind::Ipv4 => write!(f, "IPv4"),
+            Kind::Ipv6 => write!(f, "IPv6"),
+            Kind::Link => write!(f, "Link"),
+            Kind::Unknown(v) => write!(f, "Unknown({})", v),
+            Kind::Packet => write!(f, "Packet"),
+        }
     }
 }
 
@@ -67,13 +74,13 @@ pub struct Address {
     /// The kind of address this is.
     pub kind: Kind,
 
-    /// The address of this interface, if it has one.
+    /// The underlying socket address, if it applies.
     pub addr: Option<net::SocketAddr>,
 
-    /// The netmask of this interface, if it has one.
+    /// The netmask of for this interface address, if it applies.
     pub mask: Option<net::SocketAddr>,
 
-    /// The broadcast address or destination address, if it has one.
+    /// The broadcast address or destination address, if it applies.
     pub hop: Option<NextHop>,
 }
 
@@ -86,6 +93,13 @@ pub struct Interface {
 
     /// All addresses for this interface.
     pub addresses: Vec<Address>,
+
+    /// Interface flags.
+    ///
+    /// NOTE: The underlying API returns this value for each address of an interface, not each
+    /// interface itself.  We assume that they are all equal and take the first set of flags (from
+    /// the first address).
+    pub flags: InterfaceFlags,
 }
 
 impl Interface {
@@ -104,20 +118,13 @@ impl Interface {
         let mut cur: *mut ffi::ifaddrs = ifap;
         while cur != ptr::null_mut() {
             if let Some(name) = convert_ifaddr_name(cur) {
-                // TODO: this is pretty ugly - there has got to be a nicer way to either use the
-                // existing key, or insert it again.
-                let nc = name.clone();
-
                 // Either get the current entry for this interface or insert a new one.
                 let iface = ifs
                     .entry(name)
-                    .or_insert_with(|| Interface {
-                        name: nc,
-                        addresses: vec![],
-                    });
+                    .or_insert_with(|| convert_ifaddr(cur));
                 
                 // If we can, convert this current address.
-                if let Some(addr) = convert_ifaddr(cur) {
+                if let Some(addr) = convert_ifaddr_address(cur) {
                     iface.addresses.push(addr);
                 }
             }
@@ -131,6 +138,11 @@ impl Interface {
         let ret = ifs.into_iter().map(|(_, v)| v).collect::<Vec<_>>();
         Ok(ret)
     }
+
+    /// Returns whether this interface is up.
+    pub fn is_up(&self) -> bool {
+        self.flags.contains(flags::IFF_UP)
+    }
 }
 
 fn convert_ifaddr_name(ifa: *mut ffi::ifaddrs) -> Option<String> {
@@ -141,16 +153,56 @@ fn convert_ifaddr_name(ifa: *mut ffi::ifaddrs) -> Option<String> {
     }
 }
 
-fn convert_ifaddr(ifa: *mut ffi::ifaddrs) -> Option<Address> {
+fn convert_ifaddr(ifa: *mut ffi::ifaddrs) -> Interface {
+    let ifa = unsafe { &mut *ifa };
+
+    // NOTE: can unwrap() here since we only call this function if the prior call to
+    // convert_ifaddr_name succeeded.  It's a bit sad that we have to duplicate work, but not a
+    // huge deal.
+    let name = convert_ifaddr_name(ifa).unwrap();
+
+    let flags = InterfaceFlags::from_bits_truncate(ifa.ifa_flags);
+
+    Interface {
+        name: name,
+        addresses: vec![],
+        flags: flags,
+    }
+}
+
+// This is a bit scary, but the various address families are different from platform to platform,
+// and also from OS version to OS version.  Essentially, we have a couple of families that we know
+// about (IPv4, IPv6, etc.), and a couple that we determined at build time by compiling some C code
+// that tried to include the value of the AF_* constant.  For each of these, we try getting the
+// corresponding constant, and then verify if it matches.
+fn convert_ifaddr_family(family: i32) -> Kind {
+    // Helper macro!
+    macro_rules! check_family {
+        ($cc:tt -> $ty:ident) => {
+            if let Some(val) = constants::get_constant(stringify!($cc)) {
+                if family == val as i32 {
+                    return Kind::$ty;
+                }
+            }
+        };
+    }
+
+    check_family!(AF_PACKET -> Packet);
+    check_family!(AF_LINK -> Link);
+
+    match family {
+        socket::AF_INET => Kind::Ipv4,
+        socket::AF_INET6 => Kind::Ipv6,
+        val => Kind::Unknown(val),
+    }
+}
+
+fn convert_ifaddr_address(ifa: *mut ffi::ifaddrs) -> Option<Address> {
     let ifa = unsafe { &mut *ifa };
 
     let kind = if ifa.ifa_addr != ptr::null_mut() {
-        match unsafe { *ifa.ifa_addr }.sa_family as i32 {
-            ffi::AF_PACKET => Kind::Packet,
-            socket::AF_INET => Kind::Ipv4,
-            socket::AF_INET6 => Kind::Ipv6,
-            _ => return None,
-        }
+        let fam = unsafe { *ifa.ifa_addr }.sa_family as i32;
+        convert_ifaddr_family(fam)
     } else {
         return None;
     };
@@ -159,7 +211,7 @@ fn convert_ifaddr(ifa: *mut ffi::ifaddrs) -> Option<Address> {
 
     let mask = ffi::convert_sockaddr(ifa.ifa_netmask);
 
-    let flags = flags::InterfaceFlags::from_bits_truncate(ifa.ifa_flags);
+    let flags = InterfaceFlags::from_bits_truncate(ifa.ifa_flags);
     let hop = if flags.contains(flags::IFF_BROADCAST) {
         match ffi::convert_sockaddr(ifa.ifa_ifu.ifu_broadaddr()) {
             Some(x) => Some(NextHop::Broadcast(x)),
@@ -179,3 +231,11 @@ fn convert_ifaddr(ifa: *mut ffi::ifaddrs) -> Option<Address> {
         hop: hop,
     })
 }
+
+impl PartialEq for Interface {
+    fn eq(&self, other: &Interface) -> bool {
+        self.name == other.name
+    }
+}
+
+impl Eq for Interface {}

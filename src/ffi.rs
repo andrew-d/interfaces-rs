@@ -6,9 +6,6 @@ use ip::IpAddr;
 use libc::{c_void, c_char, c_int, c_uint};
 use nix::sys::socket;
 
-// nix doesn't have this const
-pub const AF_PACKET: i32 = 17;
-
 #[repr(C)]
 pub struct union_ifa_ifu {
     pub data: *mut c_void,

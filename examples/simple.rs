@@ -9,7 +9,9 @@ fn main() {
     for i in ifs.iter() {
         println!("{}:", i.name);
         println!("----------");
+        println!("Flags: {:?}", i.flags);
 
+        println!("Addresses:");
         for addr in i.addresses.iter() {
             println!("- {} - {:?}", addr.kind, addr.addr);
         }
