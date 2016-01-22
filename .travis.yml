@@ -18,13 +18,13 @@ rust:
   - beta
   - stable
 
-  # Minimum version of Rust required
-  ##- 1.0.0
+  # Minimum version of Rust supported
+  - 1.0.0
 
 before_script:
   - |
       pip install 'travis-cargo<0.2' --user &&
-      export PATH=$HOME/.local/bin:$PATH
+      export PATH=$HOME/.local/bin:$HOME/Library/Python/2.7/bin:$PATH
 
 # The main build
 script:
