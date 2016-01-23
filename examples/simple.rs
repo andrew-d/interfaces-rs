@@ -10,6 +10,7 @@ fn main() {
         println!("{}:", i.name);
         println!("----------");
         println!("Flags: {:?}", i.flags);
+        println!("MTU: {:?}", i.get_mtu().unwrap_or(0));
         println!("HWAddr: {}", i.hardware_addr().unwrap_or(interfaces::HardwareAddr::zero()));
 
         println!("Addresses:");

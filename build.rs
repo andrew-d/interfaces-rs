@@ -61,6 +61,8 @@ fn make_data() -> BTreeMap<String, Json> {
         "SIOCGIFHWADDR",
         "SIOCGIFFLAGS",
         "SIOCSIFFLAGS",
+        "SIOCGIFMTU",
+        "SIOCSIFMTU",
 
         // Address families
         "AF_LINK",

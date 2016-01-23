@@ -417,6 +417,38 @@ impl Interface {
         unsafe { close(sock) };
         Ok(())
     }
+
+    /// Retrieve the MTU of this interface.
+    #[allow(non_snake_case)]
+    pub fn get_mtu(&self) -> Result<u32> {
+        let SIOCGIFMTU = match constants::get_constant("SIOCGIFMTU") {
+            Some(c) => c,
+            None => return Err(InterfacesError::NotSupported("SIOCGIFMTU")),
+        };
+
+        // Create a socket.
+        let sock = unsafe { socket(AF_INET, SOCK_DGRAM, 0) };
+        if sock < 0 {
+            return Err(InterfacesError::last_os_error());
+        }
+
+        let mut req = ffi::ifreq_with_mtu {
+            ifr_name: [0; ffi::IFNAMSIZ],
+            ifr_mtu: 0,
+        };
+
+        copy_slice(&mut req.ifr_name, self.name.as_bytes());
+
+        let res = unsafe { ioctl(sock, SIOCGIFMTU, &mut req) };
+        if res < 0 {
+            let err = InterfacesError::last_os_error();
+            unsafe { close(sock) };
+            return Err(err);
+        }
+
+        unsafe { close(sock) };
+        Ok(req.ifr_mtu as u32)
+    }
 }
 
 fn convert_ifaddr_name(ifa: *mut ffi::ifaddrs) -> Option<String> {
@@ -436,7 +468,6 @@ fn convert_ifaddr(ifa: *mut ffi::ifaddrs) -> Interface {
     let name = convert_ifaddr_name(ifa).unwrap();
 
     let flags = InterfaceFlags::from_bits_truncate(ifa.ifa_flags);
-
     Interface {
         name: name,
         addresses: vec![],

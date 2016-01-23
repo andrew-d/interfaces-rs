@@ -21,6 +21,12 @@ pub struct ifreq_with_flags {
 }
 
 #[repr(C)]
+pub struct ifreq_with_mtu {
+    pub ifr_name: [u8; IFNAMSIZ],
+    pub ifr_mtu: c_int,
+}
+
+#[repr(C)]
 pub struct union_ifa_ifu {
     pub data: *mut c_void,
 }
