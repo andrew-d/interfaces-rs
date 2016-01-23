@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::mem;
 use std::net;
 use std::ptr;

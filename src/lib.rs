@@ -18,7 +18,10 @@ use std::net;
 use std::ptr;
 
 use libc::{AF_INET, SOCK_DGRAM};
+use libc::{c_int};
 use libc::{close, ioctl, socket};
+
+#[cfg(target_os = "linux")]
 use nix::sys::socket;
 
 pub use error::InterfacesError;
@@ -227,6 +230,9 @@ pub struct Interface {
     /// interface itself.  We assume that they are all equal and take the first set of flags (from
     /// the first address).
     pub flags: InterfaceFlags,
+
+    // Information socket
+    sock: c_int,
 }
 
 impl Interface {
@@ -235,21 +241,55 @@ impl Interface {
         // Map each interface address to a single interface name.
         let mut ifs = HashMap::new();
         for cur in try!(IfAddrIterator::new()) {
-            if let Some(name) = convert_ifaddr_name(cur) {
-                // Either get the current entry for this interface or insert a new one.
-                let iface = ifs
-                    .entry(name)
-                    .or_insert_with(|| convert_ifaddr(cur));
+            // Only support interfaces with valid names.
+            let ifname = match convert_ifaddr_name(cur) {
+                Some(n) => n,
+                None => continue,
+            };
 
-                // If we can, convert this current address.
-                if let Some(addr) = convert_ifaddr_address(cur) {
-                    iface.addresses.push(addr);
-                }
+            let iface = if ifs.contains_key(&ifname) {
+                ifs.get_mut(&ifname).unwrap()
+            } else {
+                let new_if = match Interface::new_from_ptr(cur) {
+                    Ok(i) => i,
+                    Err(_) => continue,
+                };
+                ifs.insert(ifname.clone(), new_if);
+                ifs.get_mut(&ifname).unwrap()
+            };
+
+            // If we can, convert this current address.
+            if let Some(addr) = convert_ifaddr_address(cur) {
+                iface.addresses.push(addr);
             }
         }
 
         let ret = ifs.into_iter().map(|(_, v)| v).collect::<Vec<_>>();
         Ok(ret)
+    }
+
+    /// Create a new Interface from a given `ffi::ifaddrs`.
+    pub fn new_from_ptr(ifa: *mut ffi::ifaddrs) -> Result<Interface> {
+        let ifa = unsafe { &mut *ifa };
+
+        // NOTE: can unwrap() here since we only call this function if the prior call to
+        // convert_ifaddr_name succeeded.  It's a bit sad that we have to duplicate work, but not a
+        // huge deal.
+        let name = convert_ifaddr_name(ifa).unwrap();
+
+        // Try to create a socket that we use to get info about this interface.
+        let sock = unsafe { socket(AF_INET, SOCK_DGRAM, 0) };
+        if sock < 0 {
+            return Err(InterfacesError::last_os_error());
+        }
+
+        let flags = InterfaceFlags::from_bits_truncate(ifa.ifa_flags);
+        Ok(Interface {
+            name: name,
+            addresses: vec![],
+            flags: flags,
+            sock: sock,
+        })
     }
 
     /// Returns whether this interface is up.
@@ -276,12 +316,6 @@ impl Interface {
             None => return Err(InterfacesError::NotSupported("SIOCGIFHWADDR")),
         };
 
-        // Create a socket.
-        let sock = unsafe { socket(AF_INET, SOCK_DGRAM, 0) };
-        if sock < 0 {
-            return Err(InterfacesError::last_os_error());
-        }
-
         let mut req = ffi::ifreq_with_hwaddr {
             ifr_name: [0; ffi::IFNAMSIZ],
             ifr_hwaddr: socket::sockaddr {
@@ -292,11 +326,9 @@ impl Interface {
 
         copy_slice(&mut req.ifr_name, self.name.as_bytes());
 
-        let res = unsafe { ioctl(sock, SIOCGIFHWADDR, &mut req) };
+        let res = unsafe { ioctl(self.sock, SIOCGIFHWADDR, &mut req) };
         if res < 0 {
-            let err = InterfacesError::last_os_error();
-            unsafe { close(sock) };
-            return Err(err);
+            return Err(InterfacesError::last_os_error());
         }
 
         let mut addr = [0; 6];
@@ -304,7 +336,6 @@ impl Interface {
             addr[i] = req.ifr_hwaddr.sa_data[i];
         }
 
-        unsafe { close(sock) };
         Ok(HardwareAddr(addr))
     }
 
@@ -337,7 +368,7 @@ impl Interface {
             });
 
         let link_if = match it.next() {
-            Some((name, ifa)) => ifa,
+            Some((_, ifa)) => ifa,
             None => return Err(InterfacesError::NotSupported("No AF_LINK")),
         };
 
@@ -360,6 +391,7 @@ impl Interface {
 
     /// Sets the interface as up or down.  This will change the status of the given interface in
     /// the system, and update the flags of this `Interface` instance.
+    #[allow(non_snake_case)]
     pub fn set_up(&mut self, up: bool) -> Result<()> {
         // We need these IOCTLs in order to get/set the interface flags.
         let SIOCGIFFLAGS = match constants::get_constant("SIOCGIFFLAGS") {
@@ -371,12 +403,6 @@ impl Interface {
             None => return Err(InterfacesError::NotSupported("SIOCSIFFLAGS")),
         };
 
-        // Create a socket.
-        let sock = unsafe { socket(AF_INET, SOCK_DGRAM, 0) };
-        if sock < 0 {
-            return Err(InterfacesError::last_os_error());
-        }
-
         let mut req = ffi::ifreq_with_flags {
             ifr_name: [0; ffi::IFNAMSIZ],
             ifr_flags: 0,
@@ -385,10 +411,9 @@ impl Interface {
         copy_slice(&mut req.ifr_name, self.name.as_bytes());
 
         // Get the existing flags.
-        let res = unsafe { ioctl(sock, SIOCGIFFLAGS, &mut req) };
+        let res = unsafe { ioctl(self.sock, SIOCGIFFLAGS, &mut req) };
         if res < 0 {
             let err = InterfacesError::last_os_error();
-            unsafe { close(sock) };
             return Err(err);
         }
 
@@ -404,17 +429,14 @@ impl Interface {
         };
 
         // Set the flags back.
-        let res = unsafe { ioctl(sock, SIOCSIFFLAGS, &mut req) };
+        let res = unsafe { ioctl(self.sock, SIOCSIFFLAGS, &mut req) };
         if res < 0 {
-            let err = InterfacesError::last_os_error();
-            unsafe { close(sock) };
-            return Err(err);
+            return Err(InterfacesError::last_os_error());
         }
 
         // Update our flags to represent the new state.
         self.flags = InterfaceFlags::from_bits_truncate(req.ifr_flags as u32);
 
-        unsafe { close(sock) };
         Ok(())
     }
 
@@ -426,12 +448,6 @@ impl Interface {
             None => return Err(InterfacesError::NotSupported("SIOCGIFMTU")),
         };
 
-        // Create a socket.
-        let sock = unsafe { socket(AF_INET, SOCK_DGRAM, 0) };
-        if sock < 0 {
-            return Err(InterfacesError::last_os_error());
-        }
-
         let mut req = ffi::ifreq_with_mtu {
             ifr_name: [0; ffi::IFNAMSIZ],
             ifr_mtu: 0,
@@ -439,14 +455,11 @@ impl Interface {
 
         copy_slice(&mut req.ifr_name, self.name.as_bytes());
 
-        let res = unsafe { ioctl(sock, SIOCGIFMTU, &mut req) };
+        let res = unsafe { ioctl(self.sock, SIOCGIFMTU, &mut req) };
         if res < 0 {
-            let err = InterfacesError::last_os_error();
-            unsafe { close(sock) };
-            return Err(err);
+            return Err(InterfacesError::last_os_error());
         }
 
-        unsafe { close(sock) };
         Ok(req.ifr_mtu as u32)
     }
 }
@@ -456,22 +469,6 @@ fn convert_ifaddr_name(ifa: *mut ffi::ifaddrs) -> Option<String> {
     match unsafe { CStr::from_ptr(ifa.ifa_name).to_str() } {
         Ok(s) => Some(s.to_string()),
         Err(_) => None,
-    }
-}
-
-fn convert_ifaddr(ifa: *mut ffi::ifaddrs) -> Interface {
-    let ifa = unsafe { &mut *ifa };
-
-    // NOTE: can unwrap() here since we only call this function if the prior call to
-    // convert_ifaddr_name succeeded.  It's a bit sad that we have to duplicate work, but not a
-    // huge deal.
-    let name = convert_ifaddr_name(ifa).unwrap();
-
-    let flags = InterfaceFlags::from_bits_truncate(ifa.ifa_flags);
-    Interface {
-        name: name,
-        addresses: vec![],
-        flags: flags,
     }
 }
 
@@ -544,6 +541,13 @@ impl PartialEq for Interface {
 }
 
 impl Eq for Interface {}
+
+impl Drop for Interface {
+    fn drop(&mut self) {
+        let sock = mem::replace(&mut self.sock, 0);
+        unsafe { close(sock) };
+    }
+}
 
 
 // Helper function
