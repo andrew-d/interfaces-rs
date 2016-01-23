@@ -30,7 +30,9 @@ pub use flags::InterfaceFlags;
 mod constants;
 mod error;
 mod ffi;
-mod flags;
+
+/// Submodule containing various flags.
+pub mod flags;
 
 /// A specialized Result type for this crate.
 pub type Result<T> = ::std::result::Result<T, InterfacesError>;
