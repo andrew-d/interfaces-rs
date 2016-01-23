@@ -8,6 +8,7 @@ use interfaces::{Interface, Kind, flags};
 // Flag mappings that ifconfig uses, in order.
 const NAME_MAPPINGS: &'static [(flags::InterfaceFlags, &'static str)] = &[
     (flags::IFF_UP, "UP"),
+    (flags::IFF_LOOPBACK, "LOOPBACK"),
     (flags::IFF_BROADCAST, "BROADCAST"),
     // SMART?
     (flags::IFF_RUNNING, "RUNNING"),
