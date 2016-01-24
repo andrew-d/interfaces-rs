@@ -610,3 +610,39 @@ fn copy_slice(dst: &mut [u8], src: &[u8]) -> usize {
 
     c
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::hash::Hash;
+
+    #[test]
+    fn test_interface_is_comparable() {
+        let ifs = Interface::get_all().unwrap();
+
+        assert!(ifs[0] == ifs[0]);
+    }
+
+    #[test]
+    fn test_hardwareaddr_deriving() {
+        let one = HardwareAddr::zero();
+        let two = HardwareAddr::zero();
+
+        assert!(one == two);
+        assert_is_clone(&one);
+        assert_is_copy(&one);
+        assert_is_hash(&one);
+    }
+
+    #[test]
+    fn test_hardwareaddr_format() {
+        let h = HardwareAddr::zero();
+
+        assert_eq!(h.as_string(), "00:00:00:00:00:00");
+        assert_eq!(h.as_bare_string(), "000000000000");
+    }
+
+    fn assert_is_clone<T: Clone>(_: &T) {}
+    fn assert_is_copy<T: Copy>(_: &T) {}
+    fn assert_is_hash<T: Hash>(_: &T) {}
+}
