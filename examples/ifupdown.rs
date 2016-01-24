@@ -18,19 +18,15 @@ fn main() {
         _ => usage(),
     };
 
-    let ifs = match Interface::get_all() {
-        Ok(ifs) => ifs,
-        Err(e) => {
-            println!("Could not get interfaces: {:?}", e);
+    let ifname = &args[2];
+    let mut i = match Interface::get_by_name(ifname) {
+        Ok(Some(i)) => i,
+        Ok(None) => {
+            println!("Could not find an interface named: {}", ifname);
             return;
         },
-    };
-
-    let ifname = &args[2];
-    let mut i = match ifs.into_iter().find(|x| &x.name == ifname) {
-        Some(i) => i,
-        None => {
-            println!("Could not find an interface named: {}", ifname);
+        Err(e) => {
+            println!("An error occured fetching interfaces: {:?}", e);
             return;
         },
     };
