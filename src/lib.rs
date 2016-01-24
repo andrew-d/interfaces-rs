@@ -318,7 +318,7 @@ impl Interface {
     }
 
     /// Create a new Interface from a given `ffi::ifaddrs`.
-    pub fn new_from_ptr(ifa: *mut ffi::ifaddrs) -> Result<Interface> {
+    fn new_from_ptr(ifa: *mut ffi::ifaddrs) -> Result<Interface> {
         let ifa = unsafe { &mut *ifa };
 
         // NOTE: can unwrap() here since we only call this function if the prior call to
