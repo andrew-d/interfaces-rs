@@ -270,6 +270,53 @@ impl Interface {
         Ok(ret)
     }
 
+    /// Returns an `Interface` instance representing the interface with the given name.  Will
+    /// return `Ok(Some(Interface))` on success, `Ok(None)` if there is no such interface, and
+    /// `Err(..)` on failure.
+    ///
+    /// ```
+    /// # use interfaces::{Interface, Result};
+    /// # fn foo() -> Result<Option<Interface>> {
+    /// let i = try!(Interface::get_by_name("lo"));
+    /// if let Some(ref lo) = i {
+    ///     assert!(lo.is_loopback());
+    /// } else {
+    ///     println!("Could not find loopback interface");
+    /// }
+    /// # Ok(i)
+    /// # }
+    /// ```
+    pub fn get_by_name(name: &str) -> Result<Option<Interface>> {
+        let mut ret = None;
+
+        for cur in try!(IfAddrIterator::new()) {
+            // Only support interfaces with valid names.
+            let ifname = match convert_ifaddr_name(cur) {
+                Some(n) => n,
+                None => continue,
+            };
+
+            if ifname != name {
+                continue;
+            }
+
+            // Get or create the Interface
+            let mut i = match ret.take() {
+                Some(i) => i,
+                None => try!(Interface::new_from_ptr(cur)),
+            };
+
+            // If we can, convert this current address.
+            if let Some(addr) = convert_ifaddr_address(cur) {
+                i.addresses.push(addr);
+            }
+
+            ret = Some(i);
+        }
+
+        Ok(ret)
+    }
+
     /// Create a new Interface from a given `ffi::ifaddrs`.
     pub fn new_from_ptr(ifa: *mut ffi::ifaddrs) -> Result<Interface> {
         let ifa = unsafe { &mut *ifa };
