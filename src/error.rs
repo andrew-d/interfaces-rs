@@ -1,4 +1,6 @@
 use std::convert::From;
+use std::error::Error;
+use std::fmt;
 
 use nix;
 
@@ -27,4 +29,45 @@ impl From<nix::errno::Errno> for InterfacesError {
     fn from(e: nix::errno::Errno) -> InterfacesError {
         InterfacesError::Errno(e)
     }
+}
+
+impl Error for InterfacesError {
+    fn description(&self) -> &str {
+        use InterfacesError::*;
+
+        match *self {
+            Errno(..) => "A syscall error occured",
+            NotSupported(..) => "A required feature is not supported",
+        }
+    }
+}
+
+impl fmt::Display for InterfacesError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use InterfacesError::*;
+
+        match *self {
+            Errno(ref err) => write!(f, "Errno({})", err.desc()),
+            NotSupported(msg) => write!(f, "NotSupported({})", msg),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::error::Error;
+    use std::fmt;
+
+    use super::*;
+
+    #[test]
+    fn test_error_has_traits() {
+        let e = InterfacesError::last_os_error();
+
+        assert_is_error(&e);
+        assert_is_display(&e);
+    }
+
+    fn assert_is_error<T: Error>(_: &T) {}
+    fn assert_is_display<T: fmt::Display>(_: &T) {}
 }
