@@ -6,7 +6,7 @@ license = "MIT/Apache-2.0"
 build = "build.rs"
 
 [dependencies]
-bitflags = "*"
+bitflags = "0.5"
 ip = "1.0"
 lazy_static = "0.1.*"
 libc = "0.2"
