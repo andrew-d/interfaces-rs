@@ -19,7 +19,7 @@ rust:
   - stable
 
   # Minimum version of Rust supported
-  - 1.4.0
+  - 1.6.0
 
 before_script:
   - |
