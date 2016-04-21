@@ -385,6 +385,8 @@ impl Interface {
             addr[i] = req.ifr_hwaddr.sa_data[i];
         }
 
+        // Hardware addresses are `i8`s on Linux for some reason?
+        let addr = unsafe { mem::transmute::<[i8; 6], [u8; 6]>(addr) };
         Ok(HardwareAddr(addr))
     }
 
