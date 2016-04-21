@@ -1,7 +1,11 @@
 [package]
 name = "interfaces"
+description = "A Rust library for interacting with network interfaces"
 version = "0.0.1"
 authors = ["Andrew Dunham <andrew@du.nham.ca>"]
+homepage = "https://github.com/andrew-d/interfaces-rs"
+repository = "https://github.com/andrew-d/interfaces-rs"
+documentation = "https://andrew-d.github.io/interfaces-rs/interfaces/index.html"
 license = "MIT/Apache-2.0"
 build = "build.rs"
 

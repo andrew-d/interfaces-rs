@@ -2,7 +2,7 @@
 
 //! A library for interoperating with the network interfaces of a system.
 //!
-//! TODO: more documentation on how to use goes here.
+//! TODO: add more documentation on how to use.
 
 #[macro_use] extern crate bitflags;
 extern crate ip;
