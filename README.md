@@ -10,9 +10,8 @@ cross-platform manner.
 Add this to your `Cargo.toml`:
 
 ```
-[dependencies.interfaces]
-
-git = "https://github.com/andrew-d/interfaces-rs"
+[dependencies]
+interfaces = "0.0.1"
 ```
 
 Then, in your crate:
