@@ -57,6 +57,10 @@ extern "C" {
     pub fn freeifaddrs(ifa: *mut ifaddrs) -> c_void;
 }
 
+fn make_int16(lo: u8, hi: u8) -> u16 {
+    (lo as u16) | ((hi as u16) << 8)
+}
+
 pub fn convert_sockaddr(sa: *mut socket::sockaddr) -> Option<net::SocketAddr> {
     if sa == ptr::null_mut() {
         return None;
@@ -77,14 +81,15 @@ pub fn convert_sockaddr(sa: *mut socket::sockaddr) -> Option<net::SocketAddr> {
             let sa: *const socket::sockaddr_in6 = unsafe { mem::transmute(sa) };
             let sa = &unsafe { *sa };
             let (addr, port) = (sa.sin6_addr.s6_addr, sa.sin6_port);
-            (IpAddr::V6(net::Ipv6Addr::new(addr[0],
-                                           addr[1],
-                                           addr[2],
-                                           addr[3],
-                                           addr[4],
-                                           addr[5],
-                                           addr[6],
-                                           addr[7])),
+            (IpAddr::V6(net::Ipv6Addr::new(make_int16(addr[0], addr[1]),
+                                           make_int16(addr[2], addr[3]),
+                                           make_int16(addr[4], addr[5]),
+                                           make_int16(addr[6], addr[7]),
+                                           make_int16(addr[8], addr[9]),
+                                           make_int16(addr[10], addr[11]),
+                                           make_int16(addr[12], addr[13]),
+                                           make_int16(addr[14], addr[15]),
+                                           )),
              port)
         }
         _ => return None,
