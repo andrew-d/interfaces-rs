@@ -12,10 +12,13 @@ typedef struct constant {
 
 constant_t* rust_get_constants() {
     static constant_t constants[] = {
-        {{#each constants}}
+        {{#each test_constants}}
 #ifdef {{.}}
             { "{{.}}", {{.}} },
 #endif
+        {{/each}}
+        {{#each always_constants}}
+            { "{{.}}", {{.}} },
         {{/each}}
 
         // End of list sentinel

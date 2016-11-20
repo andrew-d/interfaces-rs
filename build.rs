@@ -67,16 +67,23 @@ fn make_data() -> BTreeMap<String, Json> {
         // Address families
         "AF_LINK",
         "AF_PACKET", // Only on Linux
-
-        // Miscellaneous
-        "sizeof(struct ifreq)",
     ];
 
     let snames = names
         .into_iter()
         .map(|x| String::from(*x))
         .collect::<Vec<String>>();
-    data.insert("constants".to_string(), snames.to_json());
+    data.insert("test_constants".to_string(), snames.to_json());
+
+    // These constants are the same as above, but we don't test them for existence with #ifdef.
+    let anames: &[&str] = &[
+        "sizeof(struct ifreq)",
+    ];
+    let sanames = anames
+        .into_iter()
+        .map(|x| String::from(*x))
+        .collect::<Vec<String>>();
+    data.insert("always_constants".to_string(), sanames.to_json());
 
     data
 }

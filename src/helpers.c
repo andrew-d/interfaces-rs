@@ -54,11 +54,12 @@
 #include <ifaddrs.h>
 
 
+// Only need this function on OS X.
 #if defined(OS_MACOS) || defined(OS_BSD)
 #include <net/if_dl.h>
-#endif
 
 
 uint8_t* rust_LLADDR(struct ifaddrs* ifap) {
     return (uint8_t *)LLADDR((struct sockaddr_dl *)(ifap)->ifa_addr);
 }
+#endif
