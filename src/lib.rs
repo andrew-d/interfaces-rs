@@ -162,6 +162,18 @@ impl HardwareAddr {
             arr[5]
         )
     }
+
+    /// Returns the raw bytes representing this hardware address.
+    ///
+    /// ```
+    /// # use interfaces::HardwareAddr;
+    /// let s = HardwareAddr::zero();
+    /// assert_eq!(s.as_bytes(), &[0, 0, 0, 0, 0, 0]);
+    /// ```
+    pub fn as_bytes(&self) -> &[u8] {
+        let &HardwareAddr(ref arr) = self;
+        arr
+    }
 }
 
 impl fmt::Display for HardwareAddr {
