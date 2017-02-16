@@ -57,7 +57,7 @@ extern "C" {
     pub fn freeifaddrs(ifa: *mut ifaddrs) -> c_void;
 }
 
-fn make_int16(lo: u8, hi: u8) -> u16 {
+fn make_int16(hi: u8, lo: u8) -> u16 {
     (lo as u16) | ((hi as u16) << 8)
 }
 
