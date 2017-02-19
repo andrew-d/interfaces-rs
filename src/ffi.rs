@@ -107,3 +107,13 @@ extern "C" {
     #[cfg(target_os = "macos")]
     pub fn rust_LLADDR(p: *mut ifaddrs) -> *const u8;
 }
+
+#[cfg(test)]
+mod tests {
+    use super::make_int16;
+
+    #[test]
+    fn test_make_int16() {
+        assert_eq!(make_int16(0xff, 0x00), 0xff00);
+    }
+}
