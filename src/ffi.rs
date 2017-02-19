@@ -57,7 +57,7 @@ extern "C" {
     pub fn freeifaddrs(ifa: *mut ifaddrs) -> c_void;
 }
 
-fn make_int16(lo: u8, hi: u8) -> u16 {
+fn make_int16(hi: u8, lo: u8) -> u16 {
     (lo as u16) | ((hi as u16) << 8)
 }
 
@@ -106,4 +106,14 @@ pub fn convert_sockaddr(sa: *mut socket::sockaddr) -> Option<net::SocketAddr> {
 extern "C" {
     #[cfg(target_os = "macos")]
     pub fn rust_LLADDR(p: *mut ifaddrs) -> *const u8;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::make_int16;
+
+    #[test]
+    fn test_make_int16() {
+        assert_eq!(make_int16(0xff, 0x00), 0xff00);
+    }
 }
