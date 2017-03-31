@@ -44,7 +44,7 @@ fn template_file() -> Result<(), Error> {
 
     let data = make_data();
     let context = hbs::Context::wraps(&data);
-    try!(handlebars.renderw("constants", &context, &mut f));
+    try!(handlebars.renderw("constants", context.data(), &mut f));
 
     Ok(())
 }
