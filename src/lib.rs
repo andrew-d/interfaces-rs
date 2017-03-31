@@ -5,7 +5,6 @@
 //! TODO: add more documentation on how to use.
 
 #[macro_use] extern crate bitflags;
-extern crate ip;
 #[macro_use] extern crate lazy_static;
 extern crate libc;
 extern crate nix;

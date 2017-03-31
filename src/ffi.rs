@@ -4,7 +4,6 @@ use std::mem;
 use std::net;
 use std::ptr;
 
-use ip::IpAddr;
 use libc::{c_void, c_char, c_int, c_uint, c_ushort};
 use nix::sys::socket;
 
@@ -71,33 +70,33 @@ pub fn convert_sockaddr(sa: *mut socket::sockaddr) -> Option<net::SocketAddr> {
             let sa: *const socket::sockaddr_in = unsafe { mem::transmute(sa) };
             let sa = &unsafe { *sa };
             let (addr, port) = (sa.sin_addr.s_addr, sa.sin_port);
-            (IpAddr::V4(net::Ipv4Addr::new(((addr & 0x000000FF) >> 0) as u8,
-                                           ((addr & 0x0000FF00) >> 8) as u8,
-                                           ((addr & 0x00FF0000) >> 16) as u8,
-                                           ((addr & 0xFF000000) >> 24) as u8)),
+            (net::IpAddr::V4(net::Ipv4Addr::new(((addr & 0x000000FF) >> 0) as u8,
+                                                ((addr & 0x0000FF00) >> 8) as u8,
+                                                ((addr & 0x00FF0000) >> 16) as u8,
+                                                ((addr & 0xFF000000) >> 24) as u8)),
              port)
         }
         socket::AF_INET6 => {
             let sa: *const socket::sockaddr_in6 = unsafe { mem::transmute(sa) };
             let sa = &unsafe { *sa };
             let (addr, port) = (sa.sin6_addr.s6_addr, sa.sin6_port);
-            (IpAddr::V6(net::Ipv6Addr::new(make_int16(addr[0], addr[1]),
-                                           make_int16(addr[2], addr[3]),
-                                           make_int16(addr[4], addr[5]),
-                                           make_int16(addr[6], addr[7]),
-                                           make_int16(addr[8], addr[9]),
-                                           make_int16(addr[10], addr[11]),
-                                           make_int16(addr[12], addr[13]),
-                                           make_int16(addr[14], addr[15]),
-                                           )),
+            (net::IpAddr::V6(net::Ipv6Addr::new(make_int16(addr[0], addr[1]),
+                                                make_int16(addr[2], addr[3]),
+                                                make_int16(addr[4], addr[5]),
+                                                make_int16(addr[6], addr[7]),
+                                                make_int16(addr[8], addr[9]),
+                                                make_int16(addr[10], addr[11]),
+                                                make_int16(addr[12], addr[13]),
+                                                make_int16(addr[14], addr[15]),
+                                                )),
              port)
         }
         _ => return None,
     };
 
     let sa = match addr {
-        IpAddr::V4(addr) => net::SocketAddr::V4(net::SocketAddrV4::new(addr, port)),
-        IpAddr::V6(addr) => net::SocketAddr::V6(net::SocketAddrV6::new(addr, port, 0, 0)),
+        net::IpAddr::V4(addr) => net::SocketAddr::V4(net::SocketAddrV4::new(addr, port)),
+        net::IpAddr::V6(addr) => net::SocketAddr::V6(net::SocketAddrV6::new(addr, port, 0, 0)),
     };
     Some(sa)
 }
