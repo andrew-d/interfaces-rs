@@ -95,13 +95,13 @@ impl fmt::Display for NextHop {
 /// This structure represents a single address for a given interface.
 #[derive(Debug)]
 pub struct Address {
-    /// The kind of address this is.
+    /// The kind of address this is (e.g. IPv4).
     pub kind: Kind,
 
     /// The underlying socket address, if it applies.
     pub addr: Option<net::SocketAddr>,
 
-    /// The netmask of for this interface address, if it applies.
+    /// The netmask of this interface address, if it applies.
     pub mask: Option<net::SocketAddr>,
 
     /// The broadcast address or destination address, if it applies.
@@ -137,7 +137,7 @@ impl HardwareAddr {
             arr[2],
             arr[3],
             arr[4],
-            arr[5]
+            arr[5],
         )
     }
 
@@ -158,7 +158,7 @@ impl HardwareAddr {
             arr[2],
             arr[3],
             arr[4],
-            arr[5]
+            arr[5],
         )
     }
 
@@ -288,13 +288,13 @@ impl Interface {
     /// ```
     /// # use interfaces::{Interface, Result};
     /// # fn foo() -> Result<Option<Interface>> {
-    /// let i = try!(Interface::get_by_name("lo"));
-    /// if let Some(ref lo) = i {
+    /// let iface = try!(Interface::get_by_name("lo"));
+    /// if let Some(ref lo) = iface {
     ///     assert!(lo.is_loopback());
     /// } else {
     ///     println!("Could not find loopback interface");
     /// }
-    /// # Ok(i)
+    /// # Ok(iface)
     /// # }
     /// ```
     pub fn get_by_name(name: &str) -> Result<Option<Interface>> {
