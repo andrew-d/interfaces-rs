@@ -372,7 +372,7 @@ impl Interface {
     fn hardware_addr_impl(&self) -> Result<HardwareAddr> {
         // We need this IOCTL in order to get the hardware address.
         let SIOCGIFHWADDR = match constants::get_constant("SIOCGIFHWADDR") {
-            Some(c) => c,
+            Some(c) => c as libc::c_ulong,
             None => return Err(InterfacesError::NotSupported("SIOCGIFHWADDR")),
         };
 
@@ -396,8 +396,8 @@ impl Interface {
             addr[i] = req.ifr_hwaddr.sa_data[i];
         }
 
-        // Hardware addresses are `i8`s on Linux for some reason?
-        let addr = unsafe { mem::transmute::<[i8; 6], [u8; 6]>(addr) };
+        // Hardware addresses are `i8`s on some Linux versions for some reason?
+        let addr = unsafe { mem::transmute::<[_; 6], [u8; 6]>(addr) };
         Ok(HardwareAddr(addr))
     }
 
@@ -457,11 +457,11 @@ impl Interface {
     pub fn set_up(&mut self, up: bool) -> Result<()> {
         // We need these IOCTLs in order to get/set the interface flags.
         let SIOCGIFFLAGS = match constants::get_constant("SIOCGIFFLAGS") {
-            Some(c) => c,
+            Some(c) => c as libc::c_ulong,
             None => return Err(InterfacesError::NotSupported("SIOCGIFFLAGS")),
         };
         let SIOCSIFFLAGS = match constants::get_constant("SIOCSIFFLAGS") {
-            Some(c) => c,
+            Some(c) => c as libc::c_ulong,
             None => return Err(InterfacesError::NotSupported("SIOCSIFFLAGS")),
         };
 
@@ -506,7 +506,7 @@ impl Interface {
     #[allow(non_snake_case)]
     pub fn get_mtu(&self) -> Result<u32> {
         let SIOCGIFMTU = match constants::get_constant("SIOCGIFMTU") {
-            Some(c) => c,
+            Some(c) => c as libc::c_ulong,
             None => return Err(InterfacesError::NotSupported("SIOCGIFMTU")),
         };
 
