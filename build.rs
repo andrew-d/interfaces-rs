@@ -6,8 +6,10 @@ use std::collections::BTreeMap;
 use std::convert::From;
 use std::fs::File;
 use std::io::{self, Read};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::exit;
+
+use std::env;
 
 use rustc_serialize::json::{Json, ToJson};
 
@@ -20,9 +22,9 @@ fn main() {
     }
 
     // Build the final library
-    let mut cfg = gcc::Config::new();
+    let mut cfg = gcc::Build::new();
 
-    let path1 = Path::new("src").join("constants.c");
+    let path1 = PathBuf::from(env::var_os("OUT_DIR").unwrap()).join("constants.c");
     let path2 = Path::new("src").join("helpers.c");
     cfg.file(&path1)
        .file(&path2)
@@ -39,7 +41,7 @@ fn template_file() -> Result<(), Error> {
     let mut handlebars = hbs::Handlebars::new();
     try!(handlebars.register_template_string("constants", s));
 
-    let out_path = Path::new("src").join("constants.c");
+    let out_path = PathBuf::from(env::var_os("OUT_DIR").unwrap()).join("constants.c");
     let mut f = try!(File::create(&out_path));
 
     let data = make_data();

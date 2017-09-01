@@ -5,6 +5,12 @@ use std::mem;
 use std::os::raw::c_char;
 use std::ptr;
 
+#[cfg(not(target_env = "musl"))]
+pub type ConstantType = u64;
+
+#[cfg(target_env = "musl")]
+pub type ConstantType = i32;
+
 /// The constant as sent by the C side.
 #[repr(C)]
 struct Constant {
@@ -18,7 +24,7 @@ extern "C" {
 }
 
 lazy_static! {
-    static ref CONSTANTS: HashMap<String, u64> = {
+    static ref CONSTANTS: HashMap<String, ConstantType> = {
         let mut cvals = vec![];
 
         let mut constant = unsafe { rust_get_constants() };
@@ -47,7 +53,7 @@ lazy_static! {
                 // HashMap has a from_iter method that accepts (key, value) tuples.
                  (
                      unsafe { CStr::from_ptr(v.name).to_string_lossy().into_owned() },
-                     v.value
+                     v.value as ConstantType
                  )
             })
             .collect::<HashMap<_, _>>();
@@ -55,7 +61,7 @@ lazy_static! {
     };
 }
 
-pub fn get_constant<S: AsRef<str>>(name: S) -> Option<u64> {
+pub fn get_constant<S: AsRef<str>>(name: S) -> Option<ConstantType> {
     // Since `u64` is `Copy`, we can dereference the constant directly
     CONSTANTS.get(name.as_ref()).map(|v| *v)
 }
