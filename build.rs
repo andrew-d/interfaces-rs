@@ -6,45 +6,47 @@ use std::collections::BTreeMap;
 use std::convert::From;
 use std::fs::File;
 use std::io::{self, Read};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::exit;
+
+use std::env;
 
 use rustc_serialize::json::{Json, ToJson};
 
 fn main() {
+    let in_path = Path::new("src").join("constants.c.in");
+    let out_path = PathBuf::from(env::var_os("OUT_DIR").unwrap()).join("constants.c");
+
     // Template the file.
-    if let Err(e) = template_file() {
+    if let Err(e) = template_file(&in_path, &out_path) {
         println!("Error creating `constants.c` from template");
         println!("-> {:?}", e);
         exit(1);
     }
 
     // Build the final library
-    let mut cfg = gcc::Config::new();
+    let mut cfg = gcc::Build::new();
 
-    let path1 = Path::new("src").join("constants.c");
-    let path2 = Path::new("src").join("helpers.c");
-    cfg.file(&path1)
-       .file(&path2)
+    let helpers_path = Path::new("src").join("helpers.c");
+    cfg.file(&out_path)
+       .file(&helpers_path)
        .compile("libinterfaces.a");
 }
 
-fn template_file() -> Result<(), Error> {
+fn template_file(in_path: &PathBuf, out_path: &PathBuf) -> Result<(), Error> {
     // Open and read the file.
-    let in_path = Path::new("src").join("constants.c.in");
-    let mut f = try!(File::open(&in_path));
+    let mut f = try!(File::open(in_path));
     let mut s = String::new();
     try!(f.read_to_string(&mut s));
 
     let mut handlebars = hbs::Handlebars::new();
-    try!(handlebars.register_template_string("constants", s));
+    try!(handlebars.register_template_string("template", s));
 
-    let out_path = Path::new("src").join("constants.c");
-    let mut f = try!(File::create(&out_path));
+    let mut f = try!(File::create(out_path));
 
     let data = make_data();
     let context = hbs::Context::wraps(&data);
-    try!(handlebars.renderw("constants", context.data(), &mut f));
+    try!(handlebars.renderw("template", context.data(), &mut f));
 
     Ok(())
 }
