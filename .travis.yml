@@ -23,6 +23,8 @@ rust:
 
 before_script:
   - |
+      wget -O /tmp/get-pip.py -q 'https://bootstrap.pypa.io/get-pip.py' &&
+      python /tmp/get-pip.py &&
       pip install 'travis-cargo<0.2' --user &&
       export PATH=$HOME/.local/bin:$HOME/Library/Python/2.7/bin:$PATH
 
