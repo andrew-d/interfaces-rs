@@ -65,7 +65,7 @@ pub fn convert_sockaddr(sa: *mut socket::sockaddr) -> Option<net::SocketAddr> {
         return None;
     }
 
-    let (addr, port) = match unsafe { *sa }.sa_family as i32 {
+    let (addr, port, flowinfo, scope_id) = match unsafe { *sa }.sa_family as i32 {
         socket::AF_INET => {
             let sa: *const socket::sockaddr_in = unsafe { mem::transmute(sa) };
             let sa = &unsafe { *sa };
@@ -74,12 +74,12 @@ pub fn convert_sockaddr(sa: *mut socket::sockaddr) -> Option<net::SocketAddr> {
                                                 ((addr & 0x0000FF00) >> 8) as u8,
                                                 ((addr & 0x00FF0000) >> 16) as u8,
                                                 ((addr & 0xFF000000) >> 24) as u8)),
-             port)
+             port, 0, 0)
         }
         socket::AF_INET6 => {
             let sa: *const socket::sockaddr_in6 = unsafe { mem::transmute(sa) };
             let sa = &unsafe { *sa };
-            let (addr, port) = (sa.sin6_addr.s6_addr, sa.sin6_port);
+            let (addr, port, flowinfo, scope_id) = (sa.sin6_addr.s6_addr, sa.sin6_port, sa.sin6_flowinfo, sa.sin6_scope_id);
             (net::IpAddr::V6(net::Ipv6Addr::new(make_int16(addr[0], addr[1]),
                                                 make_int16(addr[2], addr[3]),
                                                 make_int16(addr[4], addr[5]),
@@ -89,14 +89,14 @@ pub fn convert_sockaddr(sa: *mut socket::sockaddr) -> Option<net::SocketAddr> {
                                                 make_int16(addr[12], addr[13]),
                                                 make_int16(addr[14], addr[15]),
                                                 )),
-             port)
+             port, flowinfo, scope_id)
         }
         _ => return None,
     };
 
     let sa = match addr {
         net::IpAddr::V4(addr) => net::SocketAddr::V4(net::SocketAddrV4::new(addr, port)),
-        net::IpAddr::V6(addr) => net::SocketAddr::V6(net::SocketAddrV6::new(addr, port, 0, 0)),
+        net::IpAddr::V6(addr) => net::SocketAddr::V6(net::SocketAddrV6::new(addr, port, flowinfo, scope_id)),
     };
     Some(sa)
 }
