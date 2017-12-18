@@ -38,7 +38,7 @@ pub type Result<T> = ::std::result::Result<T, InterfacesError>;
 
 /// `Kind` represents the interface family (equivalent to the `sa_family` field in the `sockaddr`
 /// structure).
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy)]
 pub enum Kind {
     /// This interface is IPv4.
     Ipv4,
@@ -70,7 +70,7 @@ impl fmt::Display for Kind {
 }
 
 /// The next hop for an interface.  See the individual variants for more information.
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy)]
 pub enum NextHop {
     /// The broadcast address associated with the interface's address.
     Broadcast(net::SocketAddr),
@@ -93,7 +93,7 @@ impl fmt::Display for NextHop {
 }
 
 /// This structure represents a single address for a given interface.
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Address {
     /// The kind of address this is (e.g. IPv4).
     pub kind: Kind,
