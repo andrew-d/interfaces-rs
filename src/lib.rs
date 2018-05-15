@@ -4,8 +4,10 @@
 //!
 //! TODO: add more documentation on how to use.
 
-#[macro_use] extern crate bitflags;
-#[macro_use] extern crate lazy_static;
+#[macro_use]
+extern crate bitflags;
+#[macro_use]
+extern crate lazy_static;
 extern crate libc;
 extern crate nix;
 
@@ -16,8 +18,8 @@ use std::mem;
 use std::net;
 use std::ptr;
 
+use libc::c_int;
 use libc::{AF_INET, SOCK_DGRAM};
-use libc::{c_int};
 use libc::{close, ioctl, socket};
 
 #[cfg(target_os = "linux")]
@@ -82,12 +84,8 @@ pub enum NextHop {
 impl fmt::Display for NextHop {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            NextHop::Broadcast(ref addr) => {
-                write!(f, "Broadcast({})", addr)
-            },
-            NextHop::Destination(ref addr) => {
-                write!(f, "Destination({})", addr)
-            },
+            NextHop::Broadcast(ref addr) => write!(f, "Broadcast({})", addr),
+            NextHop::Destination(ref addr) => write!(f, "Destination({})", addr),
         }
     }
 }
@@ -131,13 +129,9 @@ impl HardwareAddr {
     pub fn as_string(&self) -> String {
         let &HardwareAddr(ref arr) = self;
 
-        format!("{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}",
-            arr[0],
-            arr[1],
-            arr[2],
-            arr[3],
-            arr[4],
-            arr[5],
+        format!(
+            "{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}",
+            arr[0], arr[1], arr[2], arr[3], arr[4], arr[5],
         )
     }
 
@@ -152,13 +146,9 @@ impl HardwareAddr {
     pub fn as_bare_string(&self) -> String {
         let &HardwareAddr(ref arr) = self;
 
-        format!("{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-            arr[0],
-            arr[1],
-            arr[2],
-            arr[3],
-            arr[4],
-            arr[5],
+        format!(
+            "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+            arr[0], arr[1], arr[2], arr[3], arr[4], arr[5],
         )
     }
 
@@ -354,12 +344,12 @@ impl Interface {
 
     /// Returns whether this interface is up.
     pub fn is_up(&self) -> bool {
-        self.flags.contains(flags::IFF_UP)
+        self.flags.contains(InterfaceFlags::IFF_UP)
     }
 
     /// Returns whether this interface is a loopback address.
     pub fn is_loopback(&self) -> bool {
-        self.flags.contains(flags::IFF_LOOPBACK)
+        self.flags.contains(InterfaceFlags::IFF_LOOPBACK)
     }
 
     /// Retrieves the hardware address of this interface.
@@ -483,7 +473,7 @@ impl Interface {
         // NOTE: we don't want to convert this to/from an InterfaceFlags variable, since that will
         // strip out any unknown bits (which we don't want).  So, we just use good old bitwise
         // operators to set/clear the flags.
-        let flag_val = flags::IFF_UP.bits() as u16;
+        let flag_val = InterfaceFlags::IFF_UP.bits() as u16;
         req.ifr_flags = if up {
             req.ifr_flags | flag_val
         } else {
@@ -576,7 +566,7 @@ fn convert_ifaddr_address(ifa: *mut ffi::ifaddrs) -> Option<Address> {
     let mask = ffi::convert_sockaddr(ifa.ifa_netmask);
 
     let flags = InterfaceFlags::from_bits_truncate(ifa.ifa_flags);
-    let hop = if flags.contains(flags::IFF_BROADCAST) {
+    let hop = if flags.contains(InterfaceFlags::IFF_BROADCAST) {
         match ffi::convert_sockaddr(ifa.ifa_ifu.ifu_broadaddr()) {
             Some(x) => Some(NextHop::Broadcast(x)),
             None => None,
@@ -610,7 +600,6 @@ impl Drop for Interface {
         unsafe { close(sock) };
     }
 }
-
 
 // Helper function
 fn copy_slice(dst: &mut [u8], src: &[u8]) -> usize {
