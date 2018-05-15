@@ -1,4 +1,4 @@
-extern crate gcc;
+extern crate cc;
 extern crate handlebars as hbs;
 #[macro_use]
 extern crate serde_derive;
@@ -23,12 +23,12 @@ fn main() {
     }
 
     // Build the final library
-    let mut cfg = gcc::Build::new();
+    let mut cfg = cc::Build::new();
 
     let helpers_path = Path::new("src").join("helpers.c");
     cfg.file(&out_path)
-       .file(&helpers_path)
-       .compile("libinterfaces.a");
+        .file(&helpers_path)
+        .compile("libinterfaces.a");
 }
 
 fn template_file(in_path: &PathBuf, out_path: &PathBuf) -> Result<(), Error> {
@@ -60,16 +60,13 @@ fn make_data() -> Context {
         "SIOCSIFFLAGS",
         "SIOCGIFMTU",
         "SIOCSIFMTU",
-
         // Address families
         "AF_LINK",
         "AF_PACKET", // Only on Linux
     ];
 
     // These constants are the same as above, but we don't test them for existence with #ifdef.
-    let anames: &[&str] = &[
-        "sizeof(struct ifreq)",
-    ];
+    let anames: &[&str] = &["sizeof(struct ifreq)"];
 
     let names = names
         .into_iter()
@@ -96,7 +93,7 @@ struct Context {
 enum Error {
     IoError(io::Error),
     TemplateError(hbs::TemplateError),
-    RenderError(hbs::RenderError)
+    RenderError(hbs::RenderError),
 }
 
 impl From<io::Error> for Error {

@@ -4,7 +4,7 @@ use std::mem;
 use std::net;
 use std::ptr;
 
-use libc::{c_void, c_char, c_int, c_uint, c_ushort};
+use libc::{self, c_void, c_char, c_int, c_uint, c_ushort};
 use nix::sys::socket;
 
 pub const IFNAMSIZ: usize = 16;
@@ -66,7 +66,7 @@ pub fn convert_sockaddr(sa: *mut socket::sockaddr) -> Option<net::SocketAddr> {
     }
 
     let (addr, port, flowinfo, scope_id) = match unsafe { *sa }.sa_family as i32 {
-        socket::AF_INET => {
+        libc::AF_INET => {
             let sa: *const socket::sockaddr_in = unsafe { mem::transmute(sa) };
             let sa = &unsafe { *sa };
             let (addr, port) = (sa.sin_addr.s_addr, sa.sin_port);
@@ -76,7 +76,7 @@ pub fn convert_sockaddr(sa: *mut socket::sockaddr) -> Option<net::SocketAddr> {
                                                 ((addr & 0xFF000000) >> 24) as u8)),
              port, 0, 0)
         }
-        socket::AF_INET6 => {
+        libc::AF_INET6 => {
             let sa: *const socket::sockaddr_in6 = unsafe { mem::transmute(sa) };
             let sa = &unsafe { *sa };
             let (addr, port, flowinfo, scope_id) = (sa.sin6_addr.s6_addr, sa.sin6_port, sa.sin6_flowinfo, sa.sin6_scope_id);
