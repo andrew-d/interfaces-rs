@@ -1,0 +1,141 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `flags` mod in crate `interfaces`."><meta name="keywords" content="rust, rustlang, rust-lang, flags"><title>interfaces::flags - Rust</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Module flags</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#constants">Constants</a></li></ul></div><p class='location'><a href='../index.html'>interfaces</a></p><script>window.sidebarCurrent = {name: 'flags', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>interfaces</a>::<wbr><a class="mod" href=''>flags</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../src/interfaces/flags.rs.html#1-53' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>Submodule containing various flags.</p>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.InterfaceFlags.html"
+                                  title='struct interfaces::flags::InterfaceFlags'>InterfaceFlags</a></td>
+                           <td class='docblock-short'>
+                                <p>Represents a set of flags that describe the state of an interface.  This corresponds to the
+flags that are returned from the <code>SIOCGIFFLAGS</code> syscall</p>
+
+                           </td>
+                       </tr></table><h2 id='constants' class='section-header'><a href="#constants">Constants</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IFF_ALLMULTI.html"
+                                  title='constant interfaces::flags::IFF_ALLMULTI'>IFF_ALLMULTI</a></td>
+                           <td class='docblock-short'>
+                                <p>Receive all multicast packets.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IFF_AUTOMEDIA.html"
+                                  title='constant interfaces::flags::IFF_AUTOMEDIA'>IFF_AUTOMEDIA</a></td>
+                           <td class='docblock-short'>
+                                <p>Auto media select active.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IFF_BROADCAST.html"
+                                  title='constant interfaces::flags::IFF_BROADCAST'>IFF_BROADCAST</a></td>
+                           <td class='docblock-short'>
+                                <p>Broadcast address valid.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IFF_DEBUG.html"
+                                  title='constant interfaces::flags::IFF_DEBUG'>IFF_DEBUG</a></td>
+                           <td class='docblock-short'>
+                                <p>Turn on debugging.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IFF_DYNAMIC.html"
+                                  title='constant interfaces::flags::IFF_DYNAMIC'>IFF_DYNAMIC</a></td>
+                           <td class='docblock-short'>
+                                <p>Dialup device with changing addresses.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IFF_LOOPBACK.html"
+                                  title='constant interfaces::flags::IFF_LOOPBACK'>IFF_LOOPBACK</a></td>
+                           <td class='docblock-short'>
+                                <p>Is a loopback net.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IFF_MASTER.html"
+                                  title='constant interfaces::flags::IFF_MASTER'>IFF_MASTER</a></td>
+                           <td class='docblock-short'>
+                                <p>Master of a load balancer.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IFF_MULTICAST.html"
+                                  title='constant interfaces::flags::IFF_MULTICAST'>IFF_MULTICAST</a></td>
+                           <td class='docblock-short'>
+                                <p>Supports multicast.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IFF_NOARP.html"
+                                  title='constant interfaces::flags::IFF_NOARP'>IFF_NOARP</a></td>
+                           <td class='docblock-short'>
+                                <p>No address resolution protocol.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IFF_NOTRAILERS.html"
+                                  title='constant interfaces::flags::IFF_NOTRAILERS'>IFF_NOTRAILERS</a></td>
+                           <td class='docblock-short'>
+                                <p>Avoid use of trailers.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IFF_POINTOPOINT.html"
+                                  title='constant interfaces::flags::IFF_POINTOPOINT'>IFF_POINTOPOINT</a></td>
+                           <td class='docblock-short'>
+                                <p>Interface is point-to-point link.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IFF_PORTSEL.html"
+                                  title='constant interfaces::flags::IFF_PORTSEL'>IFF_PORTSEL</a></td>
+                           <td class='docblock-short'>
+                                <p>Can set media type.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IFF_PROMISC.html"
+                                  title='constant interfaces::flags::IFF_PROMISC'>IFF_PROMISC</a></td>
+                           <td class='docblock-short'>
+                                <p>Receive all packets.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IFF_RUNNING.html"
+                                  title='constant interfaces::flags::IFF_RUNNING'>IFF_RUNNING</a></td>
+                           <td class='docblock-short'>
+                                <p>Resources allocated.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IFF_SLAVE.html"
+                                  title='constant interfaces::flags::IFF_SLAVE'>IFF_SLAVE</a></td>
+                           <td class='docblock-short'>
+                                <p>Slave of a load balancer.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IFF_UP.html"
+                                  title='constant interfaces::flags::IFF_UP'>IFF_UP</a></td>
+                           <td class='docblock-short'>
+                                <p>Interface is up.</p>
+
+                           </td>
+                       </tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../";window.currentCrate = "interfaces";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script defer src="../../search-index.js"></script></body></html>

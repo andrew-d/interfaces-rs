@@ -1,0 +1,9 @@
+var ALIASES = {};
+ALIASES['bitflags'] = {};
+ALIASES['bitflags'] = {};
+ALIASES['cfg_if'] = {};
+ALIASES['interfaces'] = {};
+ALIASES['lazy_static'] = {};
+ALIASES['libc'] = {};
+ALIASES['nix'] = {};
+ALIASES['void'] = {};
