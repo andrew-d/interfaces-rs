@@ -26,9 +26,17 @@ fn main() {
     let mut cfg = cc::Build::new();
 
     let helpers_path = Path::new("src").join("helpers.c");
-    cfg.file(&out_path)
-        .file(&helpers_path)
-        .compile("libinterfaces.a");
+    let ifaddrs_path = Path::new("src").join("ifaddrs.c");
+
+    let cfg = cfg.file(&out_path)
+        .file(&helpers_path);
+
+
+    if env::var_os("CARGO_CFG_TARGET_OS").unwrap().to_str().unwrap() == "android" {
+        cfg.file(ifaddrs_path);
+    }
+
+    cfg.compile("libinterfaces.a");
 }
 
 fn template_file(in_path: &PathBuf, out_path: &PathBuf) -> Result<(), Error> {

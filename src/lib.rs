@@ -122,7 +122,7 @@ impl HardwareAddr {
     /// format, each seperated by a colon.
     ///
     /// ```
-    /// # use interfaces::HardwareAddr;
+    /// # use interfaces2::HardwareAddr;
     /// let s = HardwareAddr::zero().as_string();
     /// assert_eq!(s, "00:00:00:00:00:00");
     /// ```
@@ -139,7 +139,7 @@ impl HardwareAddr {
     /// colons.
     ///
     /// ```
-    /// # use interfaces::HardwareAddr;
+    /// # use interfaces2::HardwareAddr;
     /// let s = HardwareAddr::zero().as_bare_string();
     /// assert_eq!(s, "000000000000");
     /// ```
@@ -155,7 +155,7 @@ impl HardwareAddr {
     /// Returns the raw bytes representing this hardware address.
     ///
     /// ```
-    /// # use interfaces::HardwareAddr;
+    /// # use interfaces2::HardwareAddr;
     /// let s = HardwareAddr::zero();
     /// assert_eq!(s.as_bytes(), &[0, 0, 0, 0, 0, 0]);
     /// ```
@@ -276,7 +276,7 @@ impl Interface {
     /// `Err(..)` on failure.
     ///
     /// ```
-    /// # use interfaces::{Interface, Result};
+    /// # use interfaces2::{Interface, Result};
     /// # fn foo() -> Result<Option<Interface>> {
     /// let iface = try!(Interface::get_by_name("lo"));
     /// if let Some(ref lo) = iface {

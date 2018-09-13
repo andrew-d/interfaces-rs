@@ -1,9 +1,9 @@
-extern crate interfaces;
+extern crate interfaces2;
 
 use std::iter;
 use std::net;
 
-use interfaces::{Interface, Kind, flags::{self, InterfaceFlags}};
+use interfaces2::{Interface, Kind, flags::{self, InterfaceFlags}};
 
 // Flag mappings that ifconfig uses, in order.
 const NAME_MAPPINGS: &'static [(flags::InterfaceFlags, &'static str)] = &[

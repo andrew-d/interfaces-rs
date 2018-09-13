@@ -1,9 +1,9 @@
-extern crate interfaces;
+extern crate interfaces2;
 
 use std::env;
 use std::process::exit;
 
-use interfaces::Interface;
+use interfaces2::Interface;
 
 
 fn main() {
