@@ -1,4 +1,4 @@
-extern crate gcc;
+extern crate cc;
 extern crate handlebars as hbs;
 #[macro_use]
 extern crate serde_derive;
@@ -23,7 +23,7 @@ fn main() {
     }
 
     // Build the final library
-    let mut cfg = gcc::Build::new();
+    let mut cfg = cc::Build::new();
 
     let helpers_path = Path::new("src").join("helpers.c");
     cfg.file(&out_path)
