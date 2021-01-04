@@ -5,15 +5,7 @@ use std::mem;
 use std::os::raw::c_char;
 use std::ptr;
 
-#[cfg(all(not(target_pointer_width = "32"), not(target_env = "musl"), not(target_os="android")))]
-pub type ConstantType = u64;
-
-#[cfg(all(target_pointer_width = "32", not(target_env = "musl"), not(target_os="android")))]
-pub type ConstantType = u32;
-
-#[cfg(any(target_env = "musl", target_os="android") )]
-pub type ConstantType = i32;
-
+pub type ConstantType = libc::c_ulong;
 
 /// The constant as sent by the C side.
 #[repr(C)]
@@ -84,4 +76,3 @@ mod tests {
         assert!(get_constant("bad key").is_none())
     }
 }
-
