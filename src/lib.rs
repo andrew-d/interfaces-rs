@@ -19,8 +19,8 @@ use std::net;
 use std::ptr;
 
 use libc::c_int;
-use libc::{AF_INET, SOCK_DGRAM};
 use libc::{close, ioctl, socket};
+use libc::{AF_INET, SOCK_DGRAM};
 
 #[cfg(target_os = "linux")]
 use nix::sys::socket;
@@ -243,7 +243,7 @@ impl Interface {
     pub fn get_all() -> Result<Vec<Interface>> {
         // Map each interface address to a single interface name.
         let mut ifs = HashMap::new();
-        for cur in try!(IfAddrIterator::new()) {
+        for cur in IfAddrIterator::new()? {
             // Only support interfaces with valid names.
             let ifname = match convert_ifaddr_name(cur) {
                 Some(n) => n,
@@ -278,7 +278,7 @@ impl Interface {
     /// ```
     /// # use interfaces::{Interface, Result};
     /// # fn foo() -> Result<Option<Interface>> {
-    /// let iface = try!(Interface::get_by_name("lo"));
+    /// let iface = Interface::get_by_name("lo")?;
     /// if let Some(ref lo) = iface {
     ///     assert!(lo.is_loopback());
     /// } else {
@@ -290,7 +290,7 @@ impl Interface {
     pub fn get_by_name(name: &str) -> Result<Option<Interface>> {
         let mut ret = None;
 
-        for cur in try!(IfAddrIterator::new()) {
+        for cur in IfAddrIterator::new()? {
             // Only support interfaces with valid names.
             let ifname = match convert_ifaddr_name(cur) {
                 Some(n) => n,
@@ -304,7 +304,7 @@ impl Interface {
             // Get or create the Interface
             let mut i = match ret.take() {
                 Some(i) => i,
-                None => try!(Interface::new_from_ptr(cur)),
+                None => Interface::new_from_ptr(cur)?,
             };
 
             // If we can, convert this current address.
@@ -404,7 +404,7 @@ impl Interface {
         //  - Get the name from this interface
         //  - Filter only where the name == ours
         //  - Get only AF_LINK interfaces
-        let mut it = try!(IfAddrIterator::new())
+        let mut it = IfAddrIterator::new()?
             .filter_map(|cur| {
                 if let Some(name) = convert_ifaddr_name(cur) {
                     Some((name, cur))
