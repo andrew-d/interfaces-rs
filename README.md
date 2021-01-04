@@ -1,6 +1,6 @@
 # interfaces-rs
 
-[![Build Status](https://travis-ci.org/andrew-d/interfaces-rs.svg?branch=master)](https://travis-ci.org/andrew-d/interfaces-rs)
+[![Actions Status](https://github.com/andrew-d/interfaces-rs/workflows/Regression/badge.svg)](https://github.com/andrew-d/interfaces-rs/actions)
 [![Crate](https://img.shields.io/crates/v/interfaces.svg)](https://crates.io/crates/interfaces)
 [![Docs](https://docs.rs/interfaces/badge.svg)](https://docs.rs/interfaces)
 
