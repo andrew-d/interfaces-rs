@@ -5,6 +5,37 @@ use std::mem;
 use std::os::raw::c_char;
 use std::ptr;
 
+#[cfg(any(
+    target_os = "fuchsia",
+    target_os = "haiku",
+    target_os = "hermit",
+    target_os = "android",
+    target_os = "emscripten",
+    target_os = "solaris",
+    target_os = "illumos",
+    target_os = "vxworks",
+    target_os = "wasi",
+    target_env = "wasi",
+))]
+pub type ConstantType = libc::c_int;
+
+#[cfg(any(
+    target_os = "macos",
+    target_os = "ios",
+    target_os = "freebsd",
+    target_os = "dragonfly",
+    target_os = "openbsd",
+    target_os = "netbsd",
+    target_os = "redox",
+    target_env = "newlib",
+    target_env = "uclibc",
+))]
+pub type ConstantType = libc::c_ulong;
+
+#[cfg(all(target_os = "linux", target_env = "musl"))]
+pub type ConstantType = libc::c_int;
+
+#[cfg(all(target_os = "linux", target_env = "gnu"))]
 pub type ConstantType = libc::c_ulong;
 
 /// The constant as sent by the C side.
