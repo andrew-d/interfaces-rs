@@ -1,10 +1,10 @@
 [package]
-name        = "interfaces2"
+name        = "interfaces"
 description = "A Rust library for interacting with network interfaces"
 version     = "0.0.5"
 authors     = ["Arvid E Picciani <aep@exys.org>", "Andrew Dunham <andrew@du.nham.ca>"]
-homepage    = "https://github.com/aep/interfaces-rs"
-repository  = "https://github.com/aep/interfaces-rs"
+homepage    = "https://github.com/andrew-d/interfaces-rs"
+repository  = "https://github.com/andrew-d/interfaces-rs"
 license     = "MIT/Apache-2.0"
 build       = "build.rs"
 
