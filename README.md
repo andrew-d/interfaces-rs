@@ -13,7 +13,7 @@ Add this to your `Cargo.toml`:
 
 ```
 [dependencies]
-interfaces = "0.0.5"
+interfaces = "0.0.6"
 ```
 
 Then, in your crate:
