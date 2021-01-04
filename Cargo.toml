@@ -12,7 +12,7 @@ build       = "build.rs"
 bitflags    = "1.0"
 lazy_static = "1.0"
 libc        = "0.2"
-nix         = "0.10"
+nix         = "0.19"
 
 [build-dependencies]
 cc              = "1"
