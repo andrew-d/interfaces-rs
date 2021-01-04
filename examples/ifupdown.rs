@@ -1,10 +1,9 @@
-extern crate interfaces2;
+extern crate interfaces;
 
 use std::env;
 use std::process::exit;
 
-use interfaces2::Interface;
-
+use interfaces::Interface;
 
 fn main() {
     let args = env::args().collect::<Vec<_>>();
@@ -24,22 +23,29 @@ fn main() {
         Ok(None) => {
             println!("Could not find an interface named: {}", ifname);
             return;
-        },
+        }
         Err(e) => {
             println!("An error occured fetching interfaces: {:?}", e);
             return;
-        },
+        }
     };
 
-    println!("Interface {} was {}", i.name, if i.is_up() { "up" } else { "down" });
+    println!(
+        "Interface {} was {}",
+        i.name,
+        if i.is_up() { "up" } else { "down" }
+    );
     match i.set_up(new_status) {
         Ok(_) => {
             println!("Successfully set interface status");
-            println!("Interface is now {}", if new_status { "up" } else { "down" });
-        },
+            println!(
+                "Interface is now {}",
+                if new_status { "up" } else { "down" }
+            );
+        }
         Err(e) => {
             println!("Could not set interface status: {:?}", e);
-        },
+        }
     };
 }
 
