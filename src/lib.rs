@@ -347,6 +347,11 @@ impl Interface {
         self.flags.contains(InterfaceFlags::IFF_UP)
     }
 
+    /// Returns whether this interface is ready for transfer.
+    pub fn is_running(&self) -> bool {
+        self.flags.contains(InterfaceFlags::IFF_RUNNING)
+    }
+
     /// Returns whether this interface is a loopback address.
     pub fn is_loopback(&self) -> bool {
         self.flags.contains(InterfaceFlags::IFF_LOOPBACK)
