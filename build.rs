@@ -1,8 +1,3 @@
-extern crate cc;
-extern crate handlebars as hbs;
-#[macro_use]
-extern crate serde_derive;
-
 use std::convert::From;
 use std::fs::File;
 use std::io::{self, Read};
@@ -10,6 +5,9 @@ use std::path::{Path, PathBuf};
 use std::process::exit;
 
 use std::env;
+
+use handlebars as hbs;
+use serde::{Deserialize, Serialize};
 
 fn main() {
     let in_path = Path::new("src").join("constants.c.in");

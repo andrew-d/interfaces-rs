@@ -5,6 +5,8 @@ use std::mem;
 use std::os::raw::c_char;
 use std::ptr;
 
+use lazy_static::lazy_static;
+
 #[cfg(any(
     target_os = "fuchsia",
     target_os = "haiku",

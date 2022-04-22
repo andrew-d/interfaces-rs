@@ -1,5 +1,3 @@
-extern crate interfaces;
-
 use std::net;
 
 use interfaces::{

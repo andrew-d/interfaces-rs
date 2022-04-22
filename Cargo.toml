@@ -2,6 +2,7 @@
 name        = "interfaces"
 description = "A Rust library for interacting with network interfaces"
 version     = "0.0.8"
+edition     = "2021"
 authors     = ["Naoya Hatta <dalance@gmail.com>", "Arvid E Picciani <aep@exys.org>", "Andrew Dunham <andrew@du.nham.ca>"]
 homepage    = "https://github.com/andrew-d/interfaces-rs"
 repository  = "https://github.com/andrew-d/interfaces-rs"
@@ -15,7 +16,6 @@ libc        = "0.2.103"
 nix         = "0.23.0"
 
 [build-dependencies]
-cc              = "1"
-handlebars      = "0.29"
-serde           = "1.0"
-serde_derive    = "1.0"
+cc         = "1"
+handlebars = "0.29"
+serde      = { version = "1.0", features = ["derive"] }

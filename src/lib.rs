@@ -4,13 +4,6 @@
 //!
 //! TODO: add more documentation on how to use.
 
-#[macro_use]
-extern crate bitflags;
-#[macro_use]
-extern crate lazy_static;
-extern crate libc;
-extern crate nix;
-
 use std::collections::HashMap;
 use std::ffi::CStr;
 use std::fmt;
