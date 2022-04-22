@@ -80,11 +80,11 @@ fn make_data() -> Context {
     let anames: &[&str] = &["sizeof(struct ifreq)"];
 
     let names = names
-        .into_iter()
+        .iter()
         .map(|x| String::from(*x))
         .collect::<Vec<String>>();
     let anames = anames
-        .into_iter()
+        .iter()
         .map(|x| String::from(*x))
         .collect::<Vec<String>>();
 
@@ -102,25 +102,25 @@ struct Context {
 
 #[derive(Debug)]
 enum Error {
-    IoError(io::Error),
-    TemplateError(hbs::TemplateError),
-    RenderError(hbs::RenderError),
+    Io(io::Error),
+    Template(hbs::TemplateError),
+    Render(hbs::RenderError),
 }
 
 impl From<io::Error> for Error {
     fn from(e: io::Error) -> Error {
-        Error::IoError(e)
+        Error::Io(e)
     }
 }
 
 impl From<hbs::TemplateError> for Error {
     fn from(e: hbs::TemplateError) -> Error {
-        Error::TemplateError(e)
+        Error::Template(e)
     }
 }
 
 impl From<hbs::RenderError> for Error {
     fn from(e: hbs::RenderError) -> Error {
-        Error::RenderError(e)
+        Error::Render(e)
     }
 }

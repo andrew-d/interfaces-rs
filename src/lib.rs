@@ -185,10 +185,7 @@ impl IfAddrIterator {
             return Err(InterfacesError::last_os_error());
         }
 
-        Ok(IfAddrIterator {
-            orig: ifap,
-            ifap: ifap,
-        })
+        Ok(IfAddrIterator { orig: ifap, ifap })
     }
 }
 
@@ -335,10 +332,10 @@ impl Interface {
 
         let flags = InterfaceFlags::from_bits_truncate(ifa.ifa_flags);
         Ok(Interface {
-            name: name,
+            name,
             addresses: vec![],
-            flags: flags,
-            sock: sock,
+            flags,
+            sock,
         })
     }
 
@@ -387,9 +384,7 @@ impl Interface {
         }
 
         let mut addr = [0; 6];
-        for i in 0..6 {
-            addr[i] = req.ifr_hwaddr.sa_data[i];
-        }
+        addr[..6].copy_from_slice(&req.ifr_hwaddr.sa_data[..6]);
 
         // Hardware addresses are `i8`s on some Linux versions for some reason?
         let addr = unsafe { mem::transmute::<[_; 6], [u8; 6]>(addr) };
@@ -559,7 +554,7 @@ fn convert_ifaddr_family(family: i32) -> Kind {
 fn convert_ifaddr_address(ifa: *mut ffi::ifaddrs) -> Option<Address> {
     let ifa = unsafe { &mut *ifa };
 
-    let kind = if ifa.ifa_addr != ptr::null_mut() {
+    let kind = if !ifa.ifa_addr.is_null() {
         let fam = unsafe { *ifa.ifa_addr }.sa_family as i32;
         convert_ifaddr_family(fam)
     } else {
@@ -572,22 +567,16 @@ fn convert_ifaddr_address(ifa: *mut ffi::ifaddrs) -> Option<Address> {
 
     let flags = InterfaceFlags::from_bits_truncate(ifa.ifa_flags);
     let hop = if flags.contains(InterfaceFlags::IFF_BROADCAST) {
-        match ffi::convert_sockaddr(ifa.ifa_ifu.ifu_broadaddr()) {
-            Some(x) => Some(NextHop::Broadcast(x)),
-            None => None,
-        }
+        ffi::convert_sockaddr(ifa.ifa_ifu.ifu_broadaddr()).map(NextHop::Broadcast)
     } else {
-        match ffi::convert_sockaddr(ifa.ifa_ifu.ifu_dstaddr()) {
-            Some(x) => Some(NextHop::Destination(x)),
-            None => None,
-        }
+        ffi::convert_sockaddr(ifa.ifa_ifu.ifu_dstaddr()).map(NextHop::Destination)
     };
 
     Some(Address {
-        kind: kind,
-        addr: addr,
-        mask: mask,
-        hop: hop,
+        kind,
+        addr,
+        mask,
+        hop,
     })
 }
 

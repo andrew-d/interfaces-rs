@@ -74,7 +74,7 @@ lazy_static! {
         }
 
         // Convert from the C-provided type into a hashmap.
-        let ret = cvals
+        cvals
             .into_iter()
             .map(|v| {
                 // HashMap has a from_iter method that accepts (key, value) tuples.
@@ -83,14 +83,13 @@ lazy_static! {
                      v.value as ConstantType
                  )
             })
-            .collect::<HashMap<_, _>>();
-        ret
+            .collect::<HashMap<_, _>>()
     };
 }
 
 pub fn get_constant<S: AsRef<str>>(name: S) -> Option<ConstantType> {
     // Since `u64` is `Copy`, we can dereference the constant directly
-    CONSTANTS.get(name.as_ref()).map(|v| *v)
+    CONSTANTS.get(name.as_ref()).copied()
 }
 
 #[cfg(test)]
