@@ -42,17 +42,15 @@ fn main() {
 
 fn template_file(in_path: &PathBuf, out_path: &PathBuf) -> Result<(), Error> {
     // Open and read the file.
-    let mut f = File::open(in_path)?;
+    let mut in_file = File::open(in_path)?;
     let mut s = String::new();
-    f.read_to_string(&mut s)?;
+    in_file.read_to_string(&mut s)?;
 
-    let mut handlebars = hbs::Handlebars::new();
-    handlebars.register_template_string("template", s)?;
-
-    let mut f = File::create(out_path)?;
+    let handlebars = hbs::Handlebars::new();
+    let mut out_file = File::create(out_path)?;
 
     let data = make_data();
-    handlebars.renderw("template", &data, &mut f)?;
+    handlebars.render_template_to_write(&s, &data, &mut out_file)?;
 
     Ok(())
 }
