@@ -2,8 +2,6 @@ use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
-use nix;
-
 /// InterfacesError is the error type that is returned by all functions in this crate.  See the
 /// documentation on the individual variants for more information.
 #[derive(Debug)]
@@ -21,7 +19,7 @@ impl InterfacesError {
     /// Create a new instance of `InterfacesError` with the error set to the current value of the
     /// libc `errno` variable.
     pub fn last_os_error() -> InterfacesError {
-        return InterfacesError::Errno(nix::errno::Errno::last());
+        InterfacesError::Errno(nix::errno::Errno::last())
     }
 }
 

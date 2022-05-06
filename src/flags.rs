@@ -1,3 +1,5 @@
+use bitflags::bitflags;
+
 bitflags! {
     /// Represents a set of flags that describe the state of an interface.  This corresponds to the
     /// flags that are returned from the `SIOCGIFFLAGS` syscall

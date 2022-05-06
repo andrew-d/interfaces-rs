@@ -1,8 +1,3 @@
-extern crate cc;
-extern crate handlebars as hbs;
-#[macro_use]
-extern crate serde_derive;
-
 use std::convert::From;
 use std::fs::File;
 use std::io::{self, Read};
@@ -10,6 +5,9 @@ use std::path::{Path, PathBuf};
 use std::process::exit;
 
 use std::env;
+
+use handlebars as hbs;
+use serde::{Deserialize, Serialize};
 
 fn main() {
     let in_path = Path::new("src").join("constants.c.in");
@@ -44,17 +42,15 @@ fn main() {
 
 fn template_file(in_path: &PathBuf, out_path: &PathBuf) -> Result<(), Error> {
     // Open and read the file.
-    let mut f = File::open(in_path)?;
+    let mut in_file = File::open(in_path)?;
     let mut s = String::new();
-    f.read_to_string(&mut s)?;
+    in_file.read_to_string(&mut s)?;
 
-    let mut handlebars = hbs::Handlebars::new();
-    handlebars.register_template_string("template", s)?;
-
-    let mut f = File::create(out_path)?;
+    let handlebars = hbs::Handlebars::new();
+    let mut out_file = File::create(out_path)?;
 
     let data = make_data();
-    handlebars.renderw("template", &data, &mut f)?;
+    handlebars.render_template_to_write(&s, &data, &mut out_file)?;
 
     Ok(())
 }
@@ -80,11 +76,11 @@ fn make_data() -> Context {
     let anames: &[&str] = &["sizeof(struct ifreq)"];
 
     let names = names
-        .into_iter()
+        .iter()
         .map(|x| String::from(*x))
         .collect::<Vec<String>>();
     let anames = anames
-        .into_iter()
+        .iter()
         .map(|x| String::from(*x))
         .collect::<Vec<String>>();
 
@@ -102,25 +98,25 @@ struct Context {
 
 #[derive(Debug)]
 enum Error {
-    IoError(io::Error),
-    TemplateError(hbs::TemplateError),
-    RenderError(hbs::RenderError),
+    Io(io::Error),
+    Template(hbs::TemplateError),
+    Render(hbs::RenderError),
 }
 
 impl From<io::Error> for Error {
     fn from(e: io::Error) -> Error {
-        Error::IoError(e)
+        Error::Io(e)
     }
 }
 
 impl From<hbs::TemplateError> for Error {
     fn from(e: hbs::TemplateError) -> Error {
-        Error::TemplateError(e)
+        Error::Template(e)
     }
 }
 
 impl From<hbs::RenderError> for Error {
     fn from(e: hbs::RenderError) -> Error {
-        Error::RenderError(e)
+        Error::Render(e)
     }
 }

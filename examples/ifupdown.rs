@@ -1,5 +1,3 @@
-extern crate interfaces;
-
 use std::env;
 use std::process::exit;
 

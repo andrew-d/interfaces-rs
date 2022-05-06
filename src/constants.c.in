@@ -14,14 +14,18 @@ constant_t* rust_get_constants() {
     static constant_t constants[] = {
         // Testable constants
         {{~ #each test_constants as |c|}}
+
 #ifdef {{c}}
             { "{{c}}", {{c}} },
 #endif
+
         {{~ /each}}
 
         // "Always" constants
         {{~ #each always_constants as |c|}}
+
             { "{{c}}", {{c}} },
+            
         {{/each}}
 
         // End of list sentinel

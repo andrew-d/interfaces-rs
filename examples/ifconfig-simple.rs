@@ -1,6 +1,3 @@
-extern crate interfaces;
-
-use std::iter;
 use std::net;
 
 use interfaces::{
@@ -9,7 +6,7 @@ use interfaces::{
 };
 
 // Flag mappings that ifconfig uses, in order.
-const NAME_MAPPINGS: &'static [(flags::InterfaceFlags, &'static str)] = &[
+const NAME_MAPPINGS: &[(flags::InterfaceFlags, &str)] = &[
     (InterfaceFlags::IFF_UP, "UP"),
     (InterfaceFlags::IFF_LOOPBACK, "LOOPBACK"),
     (InterfaceFlags::IFF_BROADCAST, "BROADCAST"),
@@ -25,13 +22,10 @@ fn main() {
 
     // Find the maximum alignment for our interface names.
     let max_align = ifs.iter().map(|i| i.name.len() + 2).max().unwrap();
-
-    let full_align = iter::repeat(' ').take(max_align).collect::<String>();
+    let full_align = " ".repeat(max_align);
 
     for i in ifs.iter() {
-        let name_align = iter::repeat(' ')
-            .take(max_align - i.name.len() - 2)
-            .collect::<String>();
+        let name_align = " ".repeat(max_align - i.name.len() - 2);
 
         // Build the first line by printing the interface flags.
         let first_line = {
@@ -55,10 +49,8 @@ fn main() {
 
         if i.flags.contains(InterfaceFlags::IFF_LOOPBACK) {
             println!("{}loop (Local Loopback)", full_align);
-        } else {
-            if let Ok(addr) = i.hardware_addr() {
-                println!("{}ether {}", full_align, addr);
-            }
+        } else if let Ok(addr) = i.hardware_addr() {
+            println!("{}ether {}", full_align, addr);
         }
 
         for addr in i.addresses.iter() {
@@ -80,7 +72,7 @@ fn main() {
 
 fn format_addr(addr: &net::SocketAddr) -> String {
     match addr {
-        &net::SocketAddr::V4(ref a) => format!("{}", a.ip()),
-        &net::SocketAddr::V6(ref a) => format!("{}", a.ip()),
+        net::SocketAddr::V4(a) => format!("{}", a.ip()),
+        net::SocketAddr::V6(a) => format!("{}", a.ip()),
     }
 }
