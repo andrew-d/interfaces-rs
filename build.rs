@@ -54,7 +54,7 @@ fn template_file(in_path: &PathBuf, out_path: &PathBuf) -> Result<(), Error> {
     let mut f = File::create(out_path)?;
 
     let data = make_data();
-    handlebars.renderw("template", &data, &mut f)?;
+    handlebars.render_to_write("template", &data, &mut f)?;
 
     Ok(())
 }
