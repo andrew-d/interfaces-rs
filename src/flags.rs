@@ -1,6 +1,7 @@
 bitflags! {
     /// Represents a set of flags that describe the state of an interface.  This corresponds to the
     /// flags that are returned from the `SIOCGIFFLAGS` syscall
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct InterfaceFlags: u32 {
         /// Interface is up.
         const IFF_UP = 0x1;
