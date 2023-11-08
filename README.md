@@ -7,6 +7,9 @@
 This project consists of functions to work with network interfaces in a
 cross-platform manner.
 
+This is based on `getifaddrs()` to get information of network interfaces.
+Therefore some platforms (e.g. Windows) which don't have it are not supported. 
+
 # Example
 
 Add this to your `Cargo.toml`:
